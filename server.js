@@ -30,7 +30,7 @@ app.use((req, res, next) => {
   // HSTS : impose HTTPS pendant 1 an (protection contre le downgrade / MITM)
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.setHeader('Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests");
   next();
 });
 
@@ -92,7 +92,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '1h',
   index: 'index.html',
   setHeaders(res, filePath) {
-    if (filePath.endsWith('sw.js')) res.setHeader('Cache-Control', 'no-cache');
+    if (req.url && req.url.includes('?v=')) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    else if (filePath.endsWith('sw.js')) res.setHeader('Cache-Control', 'no-cache');
     else if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
   }
 }));

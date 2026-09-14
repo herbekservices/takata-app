@@ -92,8 +92,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '1h',
   index: 'index.html',
   setHeaders(res, filePath) {
-    if (req.url && req.url.includes('?v=')) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    else if (filePath.endsWith('sw.js')) res.setHeader('Cache-Control', 'no-cache');
+    if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
+    else if (/\.(js|css|png|jpe?g|webp|svg|woff2?)$/i.test(filePath) || filePath.includes('icons')) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     else if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
   }
 }));

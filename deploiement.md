@@ -121,3 +121,22 @@ Sources : [Render pricing](https://render.com/pricing) · [Render disques](https
 ## Ce qu'il reste à faire (je peux le finaliser)
 
 Il me manque **un accès** pour publier réellement : soit un **dépôt GitHub** (token) + une **clé API Render** (Account → Settings → API Keys), soit un **VPS** (hôte, utilisateur SSH, domaine). Avec cela, je pousse, je déploie, je vérifie `/api/health` en ligne, je lance le smoke test distant et je vous rends l'URL publique prête à installer en PWA.
+
+---
+
+# ✅ DÉPLOIEMENT RÉALISÉ — 14/09/2026
+
+| Élément | Valeur |
+|---|---|
+| **Adresse permanente** | **https://takata-app.onrender.com** (HTTPS, indépendante de tout PC) |
+| Hébergeur | Render — service `takata-app` (`srv-dajt74oae00c73bapf40`), région Frankfurt, plan gratuit |
+| Code source | Dépôt GitHub `herbekservices/takata-app` (branche `main`, auto-déploiement à chaque envoi) |
+| Base de données | SQLite dans `/tmp/takata` + **sauvegarde automatique** vers le dépôt privé `herbekservices/takata-data` toutes les 5 min, **restauration automatique au démarrage** |
+| Comptes | 9 comptes (direction, 2 superviseurs, 3 commerciaux, 2 techniciens, 1 désinfection) — voir `TAKATA_ACCES_APPLICATION.xlsx` |
+| APK | `TAKATA-v1.0-debug.apk` (pointant sur l'adresse permanente) + page `/download.html` |
+
+### Points d'exploitation
+- **Redéployer** : `git push` sur `herbekservices/takata-app` (Render redéploie automatiquement) ou bouton « Deploy » du tableau de bord.
+- **Base** : sur le plan gratuit, le disque est éphémère → la durabilité est assurée par la sauvegarde GitHub (`persist.js`). **Pour une durabilité native** (sans dépendre de la sauvegarde) : ajouter un moyen de paiement sur Render puis passer le service en plan `starter` avec un disque `takata-data` monté sur `/data` (≈ 7-8 $/mois) — le code le supporte déjà (`TAKATA_DATA_DIR=/data`).
+- **Dépôt public** : `takata-app` est actuellement public (nécessaire pour un déploiement sans app GitHub autorisée). Pour le repasser en privé : connecter GitHub dans Render (Account Settings → GitHub → Configure) puis `PATCH /v1/services` — ou simplement basculer le dépôt en privé après connexion.
+- **Sauvegarde locale de secours** : le tunnel Cloudflare du PC (`start-takata-online.bat`) reste installé mais l'adresse officielle est celle de Render.

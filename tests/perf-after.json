@@ -1,0 +1,107 @@
+{
+  "base": "http://localhost:8080",
+  "iterations": 20,
+  "generatedAt": "2026-08-25T06:38:01.144Z",
+  "results": {
+    "GET /api/health (public)": {
+      "n": 20,
+      "min": 1.25,
+      "median": 1.63,
+      "p95": 3.03,
+      "max": 3.03,
+      "avg": 1.74,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "POST /api/auth/login": {
+      "n": 20,
+      "min": 45.61,
+      "median": 47.87,
+      "p95": 50.72,
+      "max": 50.72,
+      "avg": 47.85,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET / (index.html statique)": {
+      "n": 20,
+      "min": 1.73,
+      "median": 2.19,
+      "p95": 4.92,
+      "max": 4.92,
+      "avg": 2.41,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/dashboard (agent)": {
+      "n": 20,
+      "min": 1.24,
+      "median": 1.58,
+      "p95": 3.8,
+      "max": 3.8,
+      "avg": 1.7,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/customers (agent)": {
+      "n": 20,
+      "min": 1.47,
+      "median": 1.94,
+      "p95": 3.74,
+      "max": 3.74,
+      "avg": 2.07,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/payments (agent)": {
+      "n": 20,
+      "min": 0.94,
+      "median": 1.36,
+      "p95": 4.27,
+      "max": 4.27,
+      "avg": 1.41,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/installments (agent)": {
+      "n": 20,
+      "min": 1.04,
+      "median": 1.45,
+      "p95": 2.2,
+      "max": 2.2,
+      "avg": 1.49,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/stock (agent)": {
+      "n": 20,
+      "min": 0.87,
+      "median": 1.25,
+      "p95": 3.64,
+      "max": 3.64,
+      "avg": 1.4,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/admin/overview (admin)": {
+      "n": 20,
+      "min": 1.1,
+      "median": 1.43,
+      "p95": 2.42,
+      "max": 2.42,
+      "avg": 1.55,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/admin/agents (admin)": {
+      "n": 20,
+      "min": 1.51,
+      "median": 2.02,
+      "p95": 5.5,
+      "max": 5.5,
+      "avg": 2.32,
+      "ok": 20,
+      "statusOkPct": 100
+    }
+  }
+}

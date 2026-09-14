@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TAKATA — Télécharger l'application</title>
+  <style>
+    :root { --vert:#1B7A3D; --texte:#333; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--texte); background:#fff; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 28px 20px 60px; }
+    h1 { font-weight:600; color:var(--vert); margin:0 0 4px; }
+    .sub { color:#666; margin:0 0 28px; }
+    .card { border:1px solid #e6e6e6; border-radius:8px; padding:18px; margin:14px 0; }
+    .card h2 { margin:0 0 8px; font-size:18px; font-weight:600; }
+    .btn { display:inline-block; background:var(--vert); color:#fff; text-decoration:none; padding:12px 18px; border-radius:6px; font-weight:600; margin-top:10px; }
+    .btn.alt { background:#fff; color:var(--vert); border:2px solid var(--vert); }
+    ol { padding-left:20px; line-height:1.7; }
+    code { background:#f3f6f4; padding:2px 6px; border-radius:4px; }
+    .note { font-size:13px; color:#777; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>TAKATA</h1>
+    <p class="sub">Le partenaire de votre confort, au soin de notre environnement.<br>Application de collecte des déchets — Kolwezi &amp; Lubumbashi.</p>
+
+    <div class="card">
+      <h2>📱 Installer l'application (recommandé — 30 secondes)</h2>
+      <ol>
+        <li>Ouvrez <strong>ce site</strong> dans Chrome sur votre téléphone Android.</li>
+        <li>Touchez le menu <strong>⋮</strong> en haut à droite.</li>
+        <li>Touchez <strong>« Ajouter à l'écran d'accueil »</strong> puis <strong>Installer</strong>.</li>
+        <li>L'icône TAKATA apparaît sur votre écran — l'app s'ouvre en plein écran et fonctionne hors-ligne.</li>
+      </ol>
+      <a class="btn" href="./">Ouvrir l'application</a>
+      <p class="note">Aucun fichier à télécharger, mises à jour automatiques.</p>
+    </div>
+
+    <div class="card">
+      <h2>⬇️ Télécharger l'APK (Android)</h2>
+      <p>Si vous préférez un fichier d'installation classique :</p>
+      <a class="btn alt" href="./download/takata.apk">Télécharger TAKATA.apk</a>
+      <p class="note">
+        Android affichera un avertissement « sources inconnues » : acceptez-le (installation normale hors Play Store).
+        Le lien pointe vers <code>public/download/takata.apk</code> — déposez-y la dernière APK construite (dossier <code>apk/</code> du projet, guide <code>apk/apk_android.md</code>),
+        ou remplacez le lien par une <strong>GitHub Release</strong>.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

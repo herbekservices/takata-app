@@ -1,0 +1,26 @@
+# Dépendances
+node_modules/
+apk/node_modules/
+
+# Données locales (base SQLite + sauvegardes) — jamais dans Git
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Builds
+apk/android/
+out/
+captures/
+*.apk.build
+
+# Logs et fichiers temporaires
+*.log
+dom.html
+.cluster/
+
+# Secrets
+.env
+
+# Outils locaux
+tools/

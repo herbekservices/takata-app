@@ -1,0 +1,48 @@
+{
+  "name": "takata",
+  "version": "3.0.0",
+  "description": "TAKATA — PWA de terrain pour la collecte des déchets ménagers (Kolwezi & Lubumbashi) : abonnements, clients, encaissements, tournées techniques, stock, commissions, supervision d'équipes et mode hors-ligne.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "seed": "node seed.js --reset",
+    "init": "node seed.js --reset",
+    "icons": "node scripts/generate-icons.js",
+    "guide": "node scripts/generate-guide.js",
+    "test": "node tests/roles_test.js",
+    "test:roles": "node tests/roles_test.js",
+    "test:seed": "node seed.js --reset --demo",
+    "test:audit": "node tests/audit_all.js http://localhost:8080",
+    "test:e2e": "node tests/e2e_profiles.js http://localhost:8080 && node tests/e2e_tech.js http://localhost:8080",
+    "test:persist": "node tests/persist_check.js --mark && node tests/persist_check.js --verify",
+    "test:smoke": "node tests/smoke-test.js http://localhost:8080",
+    "test:security": "node tests/security-test.js http://localhost:8080",
+    "test:render": "node tests/render-check.js http://localhost:8080",
+    "snap": "node tests/snap_roles.js captures",
+    "audit": "node tests/audit_live.js"
+  },
+  "keywords": [
+    "pwa",
+    "takata",
+    "collecte",
+    "dechets",
+    "abonnements",
+    "equipes",
+    "hors-ligne"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "compression": "^1.7.4",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "docx": "^9.5.0",
+    "puppeteer-core": "^25.8.0",
+    "sharp": "^0.33.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

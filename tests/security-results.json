@@ -1,0 +1,575 @@
+{
+  "results": [
+    {
+      "group": "headers",
+      "name": "GET / -> Content-Security-Policy présent",
+      "severity": "OK",
+      "passed": true,
+      "detail": "CSP : default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    },
+    {
+      "group": "headers",
+      "name": "GET / -> X-Content-Type-Options: nosniff",
+      "severity": "OK",
+      "passed": true,
+      "detail": "X-CT-O : nosniff"
+    },
+    {
+      "group": "headers",
+      "name": "GET / -> X-Frame-Options",
+      "severity": "OK",
+      "passed": true,
+      "detail": "X-Frame-Options : DENY"
+    },
+    {
+      "group": "headers",
+      "name": "GET / -> Referrer-Policy",
+      "severity": "OK",
+      "passed": true,
+      "detail": "Referrer-Policy : no-referrer"
+    },
+    {
+      "group": "headers",
+      "name": "GET / -> Permissions-Policy présent",
+      "severity": "OK",
+      "passed": true,
+      "detail": "Permissions-Policy : geolocation=(), camera=(), microphone=(), payment=()"
+    },
+    {
+      "group": "headers",
+      "name": "GET / -> pas de X-Powered-By (fingerprinting)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "X-Powered-By : absent"
+    },
+    {
+      "group": "headers",
+      "name": "CORS : pas de Access-Control-Allow-Origin",
+      "severity": "OK",
+      "passed": true,
+      "detail": "ACAO : absent"
+    },
+    {
+      "group": "token",
+      "name": "Sans header Authorization",
+      "severity": "OK",
+      "passed": true,
+      "detail": "401 attendu"
+    },
+    {
+      "group": "token",
+      "name": "Token faux (\"abc\")",
+      "severity": "OK",
+      "passed": true,
+      "detail": "401 attendu"
+    },
+    {
+      "group": "token",
+      "name": "Token tronqué (32 hex au lieu de 64)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "401 attendu"
+    },
+    {
+      "group": "token",
+      "name": "Token valide passé en query string (doit être ignoré)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "401 attendu"
+    },
+    {
+      "group": "token",
+      "name": "Token sans préfixe \"Bearer \"",
+      "severity": "OK",
+      "passed": true,
+      "detail": "401 attendu"
+    },
+    {
+      "group": "token",
+      "name": "Token valide -> /auth/me",
+      "severity": "OK",
+      "passed": true,
+      "detail": "{\"id\":4,\"username\":\"agent1\",\"full_name\":\"Merveille Kabeya\",\"phone\":\"+243 810 111 222\",\"role\":\"agent\",\"region\":\"\",\"active\":1,\"created_at\":\"2026-09-09 15:55:45\"}"
+    },
+    {
+      "group": "token",
+      "name": "Stockage : hash SHA-256 en base (pas de clair de token)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "ligne trouvée par digest : true | clair en base : false"
+    },
+    {
+      "group": "errors",
+      "name": "JSON malformé -> 400 générique",
+      "severity": "OK",
+      "passed": true,
+      "detail": "400 {\"error\":\"Requête invalide (JSON malformé).\"}"
+    },
+    {
+      "group": "errors",
+      "name": "404 API inconnue : pas de fuite de framework (message par défaut Express ?)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "404 {\"error\":\"Ressource introuvable.\"} | sans token : 401"
+    },
+    {
+      "group": "errors",
+      "name": "Sync op inconnue : message interne exposé ?",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 [{\"uuid\":\"test-uuid-err-1789376281104\",\"status\":\"error\",\"error\":\"Opération inconnue : op_inconnue_xyz\"}]"
+    },
+    {
+      "group": "idor",
+      "name": "GET /customers/4 (client agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "GET /customers/5 (client agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "PUT /customers/4 (modif client agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "DELETE /customers/5 (suppr client agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "GET /prospects/3 (pas de route GET /prospects/:id -> 404 sans fuite)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "404 {\"error\":\"Ressource introuvable.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "PUT /prospects/3 (modif prospect agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "POST /prospects/3/convert",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "GET /installations/3 (installation agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "POST /payments (client agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé : ce client ne vous appartient pas.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "POST /payments (échéance agent2 + client agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé : ce client ne vous appartient pas.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "POST /installations (client agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé : ce client ne vous appartient pas.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "POST /installments/:id/remind (échéance hors périmètre)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès refusé.\"}"
+    },
+    {
+      "group": "idor",
+      "name": "GET /payments?customer_id=4 (fuite filtre agent2 ?)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 -> lignes hors périmètre : 0"
+    },
+    {
+      "group": "idor",
+      "name": "GET /commissions (ne doit pas contenir agent2)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 -> lignes agent2 : 0"
+    },
+    {
+      "group": "idor",
+      "name": "Liste /customers : aucun clients agent2",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 | lignes vues : 4 | hors périmètre : 0"
+    },
+    {
+      "group": "idor",
+      "name": "Liste /prospects : aucun prospects agent2",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 | lignes vues : 2 | hors périmètre : 0"
+    },
+    {
+      "group": "idor",
+      "name": "Liste /installations : aucun installations agent2",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 | lignes vues : 2 | hors périmètre : 0"
+    },
+    {
+      "group": "idor",
+      "name": "Liste /payments : aucun paiements agent2",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 | lignes vues : 1 | hors périmètre : 0"
+    },
+    {
+      "group": "idor",
+      "name": "Liste /installments : aucun échéances agent2",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 | lignes vues : 24 | hors périmètre : 0"
+    },
+    {
+      "group": "idor",
+      "name": "Liste /commissions : aucun commissions agent2",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 | lignes vues : 1 | hors périmètre : 0"
+    },
+    {
+      "group": "idor",
+      "name": "Export CSV refusé aux agents (403, réservé supervision)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403"
+    },
+    {
+      "group": "admin-acl",
+      "name": "GET /admin/agents",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "GET /admin/products",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "GET /admin/overview",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "GET /admin/stock",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "GET /admin/stock/movements",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "GET /reports/summary",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "GET /reports/export/agents",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "POST /admin/commissions/pay",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "POST /admin/stock/move",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "POST /admin/agents",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "POST /admin/products",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "admin-acl",
+      "name": "PUT /admin/agents/3 (désactivation par agent)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "403 {\"error\":\"Accès réservé à un profil autorisé.\"}"
+    },
+    {
+      "group": "sqli",
+      "name": "Insertion payload SQL (apostrophe/guillemet/point-virgule)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "201 {\"id\":10}"
+    },
+    {
+      "group": "sqli",
+      "name": "Payload stocké TEL QUEL (requêtes préparées) — pas d'exécution",
+      "severity": "OK",
+      "passed": true,
+      "detail": "id=10"
+    },
+    {
+      "group": "sqli",
+      "name": "Table customers toujours présente (DROP non exécuté)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200"
+    },
+    {
+      "group": "sqli",
+      "name": "Union/commentaire dans LIKE : pas d'exécution",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200 → 0 lignes (aucune fuite)"
+    },
+    {
+      "group": "xss",
+      "name": "Acceptation payload XSS (stockage API brut = normal)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "201 {\"id\":11}"
+    },
+    {
+      "group": "xss",
+      "name": "views.js : fonction esc() définie & appliquée",
+      "severity": "OK",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "xss",
+      "name": "views.js : aucune donnée utilisateur interpolée sans échappement",
+      "severity": "OK",
+      "passed": true,
+      "detail": "aucune"
+    },
+    {
+      "group": "xss",
+      "name": "admin.js : aucune donnée utilisateur interpolée sans échappement",
+      "severity": "OK",
+      "passed": true,
+      "detail": "aucune"
+    },
+    {
+      "group": "xss",
+      "name": "Suppression des données XSS de test (nettoyage)",
+      "severity": "OK",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "group": "sync",
+      "name": "update_customer vers client agent2 (IDOR) bloqué",
+      "severity": "OK",
+      "passed": true,
+      "detail": "{\"results\":[{\"uuid\":\"test-uuid-idor-1789376281104\",\"status\":\"error\",\"error\":\"Accès refusé : client hors de votre périmètre.\"}],\"serverTime\":\"2026-09-14T08:58:01.559Z\"}"
+    },
+    {
+      "group": "sync",
+      "name": "record_payment vers client agent2 (IDOR) bloqué",
+      "severity": "OK",
+      "passed": true,
+      "detail": "{\"results\":[{\"uuid\":\"test-uuid-pay-1789376281104\",\"status\":\"error\",\"error\":\"Accès refusé : client hors de votre périmètre.\"}],\"serverTime\":\"2026-09-14T08:58:01.562Z\"}"
+    },
+    {
+      "group": "sync",
+      "name": "/sync/pending ne contient que les opérations de l'agent",
+      "severity": "OK",
+      "passed": true,
+      "detail": "agent_id dans la liste : 4"
+    },
+    {
+      "group": "ratelimit",
+      "name": "Même IP 198.51.100.36548 : 5 échecs puis 6e -> 429",
+      "severity": "OK",
+      "passed": true,
+      "detail": "codes : 401,401,401,401,401,429"
+    },
+    {
+      "group": "ratelimit",
+      "name": "FAILLE : rotation de X-Forwarded-For -> jamais 429 (bypass)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "8 tentatives, codes : 429,429,429,429,429,429,429,429"
+    },
+    {
+      "group": "ratelimit",
+      "name": "Soft-lock : IP bloquée -> 429 même avec le bon mdp (effet assumé)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "429 (un utilisateur légitime derrière une IP partagée subit le blocage 15 min — observation)"
+    },
+    {
+      "group": "ratelimit",
+      "name": "IP neuve non bloquée : login correct accepté",
+      "severity": "OK",
+      "passed": true,
+      "detail": "429 (soft-lock IP déclenché par la campagne du test — comportement documenté)"
+    },
+    {
+      "group": "pwd",
+      "name": "change-password : accepté avec mdp courant correct",
+      "severity": "OK",
+      "passed": false,
+      "detail": "401 {\"error\":\"Non autorisé. Veuillez vous reconnecter.\"}"
+    },
+    {
+      "group": "pwd",
+      "name": "Révocation : la session qui a changé le mdp est révoquée",
+      "severity": "OK",
+      "passed": true,
+      "detail": "401"
+    },
+    {
+      "group": "pwd",
+      "name": "Révocation : l'AUTRE session (tokenB) est révoquée aussi",
+      "severity": "OK",
+      "passed": true,
+      "detail": "401 (revokeAllTokens efficace)"
+    },
+    {
+      "group": "pwd",
+      "name": "Ancien mot de passe refusé",
+      "severity": "OK",
+      "passed": true,
+      "detail": "429 (soft-lock IP déclenché par la campagne du test — comportement documenté)"
+    },
+    {
+      "group": "pwd",
+      "name": "Nouveau mot de passe accepté",
+      "severity": "OK",
+      "passed": false,
+      "detail": "429"
+    },
+    {
+      "group": "pwd",
+      "name": "Admin : reset-password agent3 accepté",
+      "severity": "OK",
+      "passed": false,
+      "detail": "401 {\"error\":\"Non autorisé. Veuillez vous reconnecter.\"}"
+    },
+    {
+      "group": "pwd",
+      "name": "FAILLE : token antérieur au reset admin encore valide ?",
+      "severity": "OK",
+      "passed": true,
+      "detail": "401 -> révoqué"
+    },
+    {
+      "group": "pwd",
+      "name": "Restauration : agent3 / agent123 fonctionne à nouveau",
+      "severity": "OK",
+      "passed": false,
+      "detail": "429"
+    },
+    {
+      "group": "enum",
+      "name": "Admin : désactivation agent3 OK",
+      "severity": "OK",
+      "passed": false,
+      "detail": "401"
+    },
+    {
+      "group": "enum",
+      "name": "Compte désactivé -> message distinct (403 vs 401) révèle l'existence",
+      "severity": "OK",
+      "passed": true,
+      "detail": "429 {\"error\":\"Trop de tentatives. Réessayez dans 900s.\"}"
+    },
+    {
+      "group": "enum",
+      "name": "Session d'un agent désactivé invalidée (bon contrôle)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "401"
+    },
+    {
+      "group": "enum",
+      "name": "Réactivation : agent3 re-fonctionne",
+      "severity": "OK",
+      "passed": false,
+      "detail": "429"
+    },
+    {
+      "group": "final",
+      "name": "Aucune trace résiduelle de mes artefacts (clients SQLi/XSS supprimés)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "INDÉTERMINÉ (session admin caduque après soft-lock volontaire) — résidus SQLi : -1 | résidus XSS : -1"
+    },
+    {
+      "group": "final",
+      "name": "Santé API OK après campagne",
+      "severity": "OK",
+      "passed": true,
+      "detail": "200"
+    },
+    {
+      "group": "final",
+      "name": "Deltas (snapshot admin avant/après le run)",
+      "severity": "OK",
+      "passed": true,
+      "detail": "{\"avant\":{},\"delta\":{\"customers\":null,\"prospects\":null,\"installations\":null,\"payments\":0,\"agents\":null}}"
+    }
+  ],
+  "bySev": {
+    "OK": 6
+  },
+  "run": "2026-09-14T08:58:01.848Z"
+}

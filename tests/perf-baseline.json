@@ -1,0 +1,107 @@
+{
+  "base": "http://localhost:8080",
+  "iterations": 20,
+  "generatedAt": "2026-08-24T14:48:53.386Z",
+  "results": {
+    "GET /api/health (public)": {
+      "n": 20,
+      "min": 2.97,
+      "median": 5.82,
+      "p95": 14.61,
+      "max": 14.61,
+      "avg": 6.57,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "POST /api/auth/login": {
+      "n": 20,
+      "min": 181.39,
+      "median": 204.96,
+      "p95": 277.97,
+      "max": 277.97,
+      "avg": 216.86,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET / (index.html statique)": {
+      "n": 20,
+      "min": 9.9,
+      "median": 15.06,
+      "p95": 44.4,
+      "max": 44.4,
+      "avg": 18.03,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/dashboard (agent)": {
+      "n": 20,
+      "min": 4.85,
+      "median": 7.9,
+      "p95": 18.08,
+      "max": 18.08,
+      "avg": 8.61,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/customers (agent)": {
+      "n": 20,
+      "min": 3.79,
+      "median": 6.79,
+      "p95": 10.27,
+      "max": 10.27,
+      "avg": 7.18,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/payments (agent)": {
+      "n": 20,
+      "min": 3.45,
+      "median": 4.82,
+      "p95": 11.42,
+      "max": 11.42,
+      "avg": 5.75,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/installments (agent)": {
+      "n": 20,
+      "min": 3.84,
+      "median": 4.38,
+      "p95": 7.6,
+      "max": 7.6,
+      "avg": 4.88,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/stock (agent)": {
+      "n": 20,
+      "min": 3.47,
+      "median": 4.3,
+      "p95": 16.66,
+      "max": 16.66,
+      "avg": 5.79,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/admin/overview (admin)": {
+      "n": 20,
+      "min": 4.64,
+      "median": 10.33,
+      "p95": 22.81,
+      "max": 22.81,
+      "avg": 10.88,
+      "ok": 20,
+      "statusOkPct": 100
+    },
+    "GET /api/admin/agents (admin)": {
+      "n": 20,
+      "min": 4.37,
+      "median": 6.81,
+      "p95": 11.4,
+      "max": 11.4,
+      "avg": 7.37,
+      "ok": 20,
+      "statusOkPct": 100
+    }
+  }
+}

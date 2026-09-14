@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: takata-app
+    runtime: node
+    plan: starter            # un disque persistant exige une instance payante (tier gratuit = disque éphémère)
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: TAKATA_DATA_DIR
+        value: /data
+      - key: TAKATA_DB
+        value: /data/takata.db
+      - key: TRUST_PROXY
+        value: "1"
+    disk:
+      name: takata-data
+      mountPath: /data
+      sizeGB: 1

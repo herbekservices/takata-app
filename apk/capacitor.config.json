@@ -1,0 +1,9 @@
+{
+  "appId": "cd.takata.app",
+  "appName": "TAKATA",
+  "webDir": "www",
+  "server": {
+    "url": "https://despite-assumes-nam-jack.trycloudflare.com",
+    "cleartext": false
+  }
+}

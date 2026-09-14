@@ -1,27 +1,27 @@
 name: Keep-alive TAKATA (anti-veille Render)
 
-# Maintient l'application éveillée 24/7 sur le plan gratuit Render
-# (le plan gratuit met le service en veille après ~15 min sans trafic).
+# Maintient l application eveillee 24/7 sur le plan gratuit Render
+# (le plan gratuit met le service en veille apres ~15 min sans trafic).
 
 on:
   schedule:
-    - cron: '*/10 * * * *'   # toutes les 10 minutes
-  workflow_dispatch:          # déclenchement manuel possible
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping de l'application TAKATA
+      - name: Ping application TAKATA
         run: |
           for i in 1 2 3 4 5 6; do
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 70 https://takata-app.onrender.com/api/health || true)
             echo "Tentative $i : HTTP $code"
             if [ "$code" = "200" ]; then
-              echo "TAKATA est en ligne ✔"
+              echo "TAKATA en ligne"
               exit 0
             fi
             sleep 10
           done
-          echo "Application injoignable après 6 tentatives" >&2
+          echo "Application injoignable apres 6 tentatives" >&2
           exit 1

@@ -128,6 +128,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Arrêt gracieux (D-07) : plus de WAL corrompu sur Ctrl+C / kill propre
+// Sauvegardes périodiques de la base vers le dépôt GitHub privé (hébergeurs à FS éphémère)
+try { require('./persist').start(db); } catch (e) { console.error('[persist] démarrage impossible : ' + (e && e.message)); }
+
 function shutdown() {
   console.log('[TAKATA] Arrêt gracieux (checkpoint WAL puis fermeture)…');
   server.close(() => { db.closeDatabase(); process.exit(0); });

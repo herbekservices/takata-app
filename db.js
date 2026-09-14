@@ -316,9 +316,9 @@ function closeDatabase() {
 // --- Premier démarrage : base vide → comptes + formules (jamais de reset si des comptes existent) ---
 (function firstBootSeed() {
   try {
-    if (db.prepare('SELECT COUNT(*) c FROM users').get().c === 0) {
+    if (process.env.TAKATA_SKIP_BOOT_SEED !== '1' && db.prepare('SELECT COUNT(*) c FROM users').get().c === 0) {
       console.log('[boot] base sans comptes → initialisation (seed)');
-      require('child_process').execFileSync(process.execPath, ['seed.js', '--reset'], { cwd: __dirname, stdio: 'inherit' });
+      require('child_process').execFileSync(process.execPath, ['seed.js', '--reset'], { cwd: __dirname, stdio: 'inherit', env: Object.assign({}, process.env, { TAKATA_SKIP_BOOT_SEED: '1' }) });
       console.log('[boot] comptes créés : ' + db.prepare('SELECT COUNT(*) c FROM users').get().c);
     }
   } catch (e) { console.error('[boot] seed initial impossible : ' + e.message); }

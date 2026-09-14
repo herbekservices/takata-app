@@ -172,7 +172,7 @@ a.badge { text-decoration: none; }
 .page-sub { font-size: 13px; color: var(--text-muted); margin: -6px 18px 14px; }
 
 /* --- Auth : pleine page blanche, logo seul en couleur --- */
-.auth-wrap { min-height: 100vh; min-height: 100dvh;
+.auth-wrap { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 18px; background: var(--white); }
 .auth-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 44px 36px; box-shadow: var(--shadow-lg); }
 .auth-logo {
   width: 64px; height: 64px; border-radius: var(--radius); margin: 0 auto 18px;

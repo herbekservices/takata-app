@@ -27,6 +27,8 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=(), payment=()');
+  // HSTS : impose HTTPS pendant 1 an (protection contre le downgrade / MITM)
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.setHeader('Content-Security-Policy',
     "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
   next();
@@ -58,6 +60,20 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
+// Limiteur global anti-abus : 600 requetes / 15 min par IP sur /api (hors /api/health)
+const apiHits = new Map();
+app.use('/api', (req, res, next) => {
+  if (req.path === '/health') return next();
+  const ip = req.ip || (req.socket && req.socket.remoteAddress) || '?';
+  const now = Date.now(), WINDOW = 15 * 60 * 1000, MAX = 600;
+  const e = apiHits.get(ip);
+  if (!e || now - e.start > WINDOW) { apiHits.set(ip, { start: now, n: 1 }); return next(); }
+  e.n += 1;
+  if (apiHits.size > 5000) { for (const [k, v] of apiHits) { if (now - v.start > WINDOW) apiHits.delete(k); } }
+  if (e.n > MAX) { res.setHeader('Retry-After', '900'); return res.status(429).json({ error: 'Trop de requetes. Reessayez plus tard.' }); }
+  next();
+});
+
 // Santé (publique)
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, app: 'TAKATA', db: 'sqlite', time: new Date().toISOString() });
@@ -83,6 +99,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
 
 // Fallback SPA (routes hashées côté client)
 app.get(/^\/(?!api\/).*/, (req, res) => {
+  // Ne renvoyer l'application que pour les routes client (pas pour /data/... , /server.js ...)
+  if (path.extname(req.path)) return res.status(404).type('txt').send('Not Found');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

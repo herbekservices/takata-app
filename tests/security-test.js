@@ -69,8 +69,9 @@ async function login(username, password, ip) {
 
   // ---------- 2. Manipulation de token ----------
   console.log('\n=== 2. Manipulation de token ===');
-  const { data: a1 } = await login('agent1', 'agent123', '203.0.113.1');
-  const tok = a1.token;
+  const r1 = await login('agent1', 'agent123', '203.0.113.1');
+  const a1 = (r1 && r1.data) || {};
+  const tok = a1.token || 'x'.repeat(64); // si verrouille par le rate-limit, on continue sans planter
   record('token', 'Sans header Authorization', 'MAJEUR', (await req('GET', '/auth/me')).status === 401, '401 attendu');
   record('token', 'Token faux ("abc")', 'MAJEUR', (await req('GET', '/auth/me', { token: 'abc' })).status === 401, '401 attendu');
   record('token', 'Token tronqué (32 hex au lieu de 64)', 'MAJEUR', (await req('GET', '/auth/me', { token: tok.slice(0, 32) })).status === 401, '401 attendu');

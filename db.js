@@ -8,20 +8,7 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const DB_FILE = process.env.TAKATA_DB ? String(process.env.TAKATA_DB) : path.join(DATA_DIR, 'takata.db');
 
-// --- Restauration depuis le dépôt de sauvegarde GitHub (hébergeur à FS éphémère) ---
-// Exécutée AVANT l'ouverture de la base : si le fichier local n'existe pas et qu'une
-// sauvegarde distante est disponible, on la récupère (plan gratuit Render par ex.).
-if (process.env.GITHUB_TOKEN && process.env.GH_BACKUP_REPO && !fs.existsSync(DB_FILE)) {
-  try {
-    const script =
-      'const fs=require("fs"),path=require("path");' +
-      'try{const p=(process.env.GH_BACKUP_PATH||"data/takata.db");' +
-      'const r=await fetch("https://api.github.com/repos/"+process.env.GH_BACKUP_REPO+"/contents/"+p,{headers:{Authorization:"token "+process.env.GITHUB_TOKEN,"User-Agent":"takata"}});' +
-      'if(r.ok){const j=await r.json();fs.mkdirSync(path.dirname(process.env.TAKATA_DB),{recursive:true});fs.writeFileSync(process.env.TAKATA_DB,Buffer.from(j.content,"base64"));console.log("[persist] base restauree depuis GitHub ("+(j.size)+" octets)");}else{console.log("[persist] aucune sauvegarde distante (HTTP "+r.status+")");}}' +
-      'catch(e){console.error("[persist] restauration impossible : "+e.message)}';
-    require('child_process').execFileSync(process.execPath, ['--input-type=module', '-e', script], { stdio: 'inherit', env: process.env });
-  } catch (e) { console.error('[persist] restauration (exec) impossible : ' + e.message); }
-}
+// Restauration de la base gérée par start.js (avant chargement de ce module).
 
 const db = new Database(DB_FILE);
 db.pragma('journal_mode = WAL');

@@ -127,13 +127,13 @@ const V = TAKATA_VIEWS;
     const roleLabel = ROLE_LABELS[user.role] || user.role;
     return `
       <div class="topbar">
-    <button class="nav-arrow" id="nav-back" aria-label="Retour" onclick="history.back()">‹</button>
-    <button class="nav-arrow" id="nav-forward" aria-label="Avancer" onclick="history.forward()">›</button>
+        <button class="nav-arrow nav-back" aria-label="Retour" onclick="history.back()">‹</button>
         <div class="logo" aria-hidden="true">${icon('leaf', 22)}</div>
         <div><h1>Takata Kwetu</h1><div class="sub">${esc(title)} · ${esc(user.full_name.split(' ')[0])} <span style="opacity:.75">(${roleLabel})</span></div></div>
         <div class="row" style="gap:6px;flex:none">
           <button class="btn-icon" aria-label="Notifications" style="position:relative" onclick="location.hash='#/notifications'">${icon('bell')}<span id="notif-badge" style="display:none;position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;font-size:9px;border-radius:99px;padding:1px 4px">0</span></button>
         </div>
+        <button class="nav-arrow nav-forward" aria-label="Avancer" onclick="history.forward()">›</button>
       </div>`;
   }
 
@@ -204,6 +204,22 @@ items = [['#/', 'home', 'Accueil', 'accueil'], ['#/installations', 'recycle', 'T
     if (type === 'queue' && window.renderRoute) updateOfflineBanner();
   });
 
+  // --- Mise a jour de l'application (PWA) : proposer des qu'une version est prete ---
+  function showUpdateBanner(reg) {
+    const b = document.getElementById('update-banner');
+    if (!b) return;
+    b.style.display = 'flex';
+    const btn = document.getElementById('update-btn');
+    if (btn && !btn.dataset.wired) {
+      btn.dataset.wired = '1';
+      btn.addEventListener('click', () => {
+        b.style.display = 'none';
+        if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        else location.reload();
+      });
+    }
+  }
+
   // --- Démarrage ---
   window.addEventListener('hashchange', renderRoute);
 
@@ -223,6 +239,17 @@ items = [['#/', 'home', 'Accueil', 'accueil'], ['#/installations', 'recycle', 'T
           if (hadController && !reloaded && navigator.serviceWorker.controller) { reloaded = true; location.reload(); }
           hadController = true;
         });
+        // Proposer la mise a jour des qu'une nouvelle version est prete
+        const announce = () => { if (reg.waiting && navigator.serviceWorker.controller) showUpdateBanner(reg); };
+        if (reg.waiting) announce();
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => { if (nw.state === 'installed') announce(); });
+        });
+        const checkUpd = () => { reg.update().catch(() => {}); };
+        setInterval(checkUpd, 5 * 60 * 1000);
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpd(); });
       } catch (e) {}
     }
     // Flush la file si en ligne

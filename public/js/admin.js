@@ -362,7 +362,7 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
         <div class="stat"><div class="num">${money(d.totals.paid)}</div><div class="lbl">Payées</div></div>
       </div>
       <div class="list">
-        ${d.rows.map((c) => `<div class="card" style="margin:6px 14px"><div class="row"><div style="flex:1"><b>${esc(c.agent)}</b><div class="muted">${money(c.amount)} · ${date(c.created_at)}</div></div>${badgeC(c.status)}</div></div>`).join('') || emptyState('🏅', 'Aucune commission')}
+        ${d.rows.map((c) => `<div class="card" style="margin:6px 14px"><div class="row"><div style="flex:1"><b>${esc(c.agent)}</b><div class="muted">${money(c.amount)} · ${date(c.created_at)}</div></div>${c.status === 'paid' ? '<span class="badge green">Validée</span>' : '<button class="btn small" onclick="TAKATA_VIEWS.validateCommission(' + c.id + ')">Valider</button>'}</div></div>`).join('') || emptyState('🏅', 'Aucune commission')}
       </div>
       ${pending.length ? `<div style="padding:0 14px"><button class="btn" onclick="TAKATA_ADMIN.payCommissions()">${icon('wallet')} Payer les ${pending.length} commission(s) en attente</button></div>` : ''}
     `;
@@ -374,7 +374,6 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
     const ids = d.rows.filter((c) => c.status === 'pending').map((c) => c.id);
     if (!ids.length) return;
     const total = d.rows.filter((c) => c.status === 'pending').reduce((a, c) => a + c.amount, 0);
-    if (!confirm(`Marquer ${ids.length} commission(s) comme payées pour un total de ${total.toLocaleString('fr-FR')} FC ? Cette action est définitive.`)) return;
     try {
       await TAKATA.request('POST', '/admin/commissions/pay', { ids });
       toast('Commissions marquées payées ✅');

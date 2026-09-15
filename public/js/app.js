@@ -5,6 +5,7 @@
 const V = TAKATA_VIEWS;
   const { icon } = V.helpers;
   const A = TAKATA_ADMIN;
+  const BUILD = 11; // version du shell (mise à jour = incrementer BUILD + version.json + ?v=)
 
   // --- Routes ---
   const ROUTES = [
@@ -205,6 +206,14 @@ items = [['#/', 'home', 'Accueil', 'accueil'], ['#/installations', 'recycle', 'T
   });
 
   // --- Mise a jour de l'application (PWA) : proposer des qu'une version est prete ---
+  async function checkVersion() {
+    try {
+      const r = await fetch('/version.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) return;
+      const d = await r.json();
+      if (d && Number(d.build) > BUILD) showUpdateBanner(null);
+    } catch (e) {}
+  }
   function showUpdateBanner(reg) {
     const b = document.getElementById('update-banner');
     if (!b) return;
@@ -234,9 +243,9 @@ items = [['#/', 'home', 'Accueil', 'accueil'], ['#/installations', 'recycle', 'T
         let reloaded = false;
         let hadController = !!navigator.serviceWorker.controller;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          // Un nouveau SW (nouvelle version du shell) prend le contrôle : recharger une seule fois,
-          // mais PAS au tout premier contrôle (claim initial) qui réinitialiserait la page à vide.
-          if (hadController && !reloaded && navigator.serviceWorker.controller) { reloaded = true; location.reload(); }
+          // Un nouveau SW prend le contrôle : inviter a recharger (au lieu de recharger brutalement),
+          // sauf au tout premier controle (claim initial) ou l'on ne fait rien.
+          if (hadController && !reloaded) { reloaded = true; showUpdateBanner(reg); }
           hadController = true;
         });
         // Proposer la mise a jour des qu'une nouvelle version est prete
@@ -250,6 +259,9 @@ items = [['#/', 'home', 'Accueil', 'accueil'], ['#/installations', 'recycle', 'T
         const checkUpd = () => { reg.update().catch(() => {}); };
         setInterval(checkUpd, 5 * 60 * 1000);
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpd(); });
+        checkVersion();
+        setInterval(checkVersion, 5 * 60 * 1000);
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkVersion(); });
       } catch (e) {}
     }
     // Flush la file si en ligne

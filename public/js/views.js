@@ -621,16 +621,34 @@ toast('Réabonnement souscrit');
   async function commissionsView() {
     const d = await get('/commissions');
     if (!d) return emptyState(icon('wifi-off'), 'Hors ligne');
+    const role = (TAKATA.store.user || {}).role;
+    const canValidate = ['admin', 'admingen', 'admincomm'].includes(role);
+    const pending = d.rows.filter((c) => c.status === 'pending');
     return `
       <div class="stats">
-        <div class="stat"><div class="num">${money(d.totals.pending)}</div><div class="lbl">En attente</div></div>
-        <div class="stat"><div class="num">${money(d.totals.paid)}</div><div class="lbl">Payées</div></div>
+        <div class="stat"><div class="num">${money(d.totals.pending)}</div><div class="lbl">À valider</div></div>
+        <div class="stat"><div class="num">${money(d.totals.paid)}</div><div class="lbl">Validées</div></div>
         <div class="stat"><div class="num">${money(d.totals.total)}</div><div class="lbl">Total</div></div>
       </div>
       <div class="list">
-        ${d.rows.map((c) => listItem(icon('award'), money(c.amount), date(c.created_at) + ' · ' + esc(c.agent), (c.status === 'paid' ? '<span class=\'badge green\'>Validée</span>' : '<span class=\'badge red\'>À valider</span>'), '#/commissions')).join('') || emptyState(icon('award'), 'Aucune commission')}
+        ${d.rows.map((c) => `<div class="card" style="margin:6px 14px"><div class="row"><div class="avatar">${icon('award', 18)}</div><div style="flex:1"><b>${money(c.amount)}</b><div class="muted">${date(c.created_at)} · ${esc(c.agent)}</div></div>${c.status === 'paid' ? '<span class="badge green">Validée</span>' : (canValidate ? '<button class="btn small" onclick="TAKATA_VIEWS.validateCommission(' + c.id + ')">Valider</button>' : '<span class="badge red">À valider</span>')}</div></div>`).join('') || emptyState(icon('award'), 'Aucune commission')}
       </div>
+      ${canValidate && pending.length ? `<div style="padding:0 14px"><button class="btn" onclick="TAKATA_VIEWS.payAllCommissions()">${icon('check', 16)} Valider les ${pending.length} commission(s) en attente</button></div>` : ''}
+      ${canValidate ? '' : '<div class="card"><p class="muted">La validation des commissions est faite par la supervision ou la direction.</p></div>'}
     `;
+  }
+
+  async function validateCommission(id) {
+    try { await TAKATA.request('POST', '/admin/commissions/pay', { ids: [id] }); toast('Commission validée ✅'); renderRoute(); }
+    catch (e) { toast(e.message || 'Erreur', true); }
+  }
+
+  async function payAllCommissions() {
+    const d = await get('/commissions');
+    const ids = ((d && d.rows) || []).filter((c) => c.status === 'pending').map((c) => c.id);
+    if (!ids.length) return toast('Aucune commission en attente');
+    try { await TAKATA.request('POST', '/admin/commissions/pay', { ids }); toast('Commissions validées ✅'); renderRoute(); }
+    catch (e) { toast(e.message || 'Erreur', true); }
   }
 
   // ============ STOCK (agent) ============
@@ -1022,7 +1040,7 @@ toast('Réabonnement souscrit');
     installationsView, installationDetailView, installationFormView, saveInstallation,
     paymentsView, paymentFormView, savePayment, pickInstallment,
     installmentsView, remindInstallment,
-    commissionsView, stockView, notificationsView, readAll,
+    commissionsView, validateCommission, payAllCommissions, stockView, notificationsView, readAll,
     profileView, start2fa, enable2fa, disable2fa, syncNow, changePassword, doLogout,
     helpers: { esc, money, date, phone, initials, badge, toast, emptyState }
   };

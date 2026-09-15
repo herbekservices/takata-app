@@ -1,25 +1,30 @@
 // routes/tech.js — Rapports techniques : tournées, évacuations, désinfections, consommations
 // Périmètres : le technicien crée/voit SES rapports ; admintech voit ceux de son équipe ;
-// la direction voit tout ; admincomm : hors périmètre (403).
+// la direction voit tout ; commercial (agent) et admincomm : hors périmètre (403).
 const express = require('express');
 const db = require('../db');
-const { requireAuth, isTechnician, isSuper, scopedRoles, isTechScope } = require('../auth');
+const { requireAuth, isTechnician, isSuper, TECH_TEAM } = require('../auth');
 
 const router = express.Router();
 router.use(requireAuth);
 
-// admincomm n'a PAS le périmètre technique
+// Accès réservé aux profils techniques (technicien, superviseur technique) et à la direction.
+// Les commerciaux (agent) et le superviseur commercial sont hors périmètre.
 router.use((req, res, next) => {
-  if (req.user.role === 'admincomm') return res.status(403).json({ error: 'Rapports techniques : hors de votre périmètre.' });
+  if (req.user.role === 'agent' || req.user.role === 'admincomm') {
+    return res.status(403).json({ error: 'Rapports techniques : hors de votre périmètre.' });
+  }
   next();
 });
 
-// GET /api/tech/summary — compilation technique (pour admintech / direction)
+// Bornes métier : une saisie hors de ces limites est refusée (évite de corrompre les statistiques)
+const MAX_QTY = 100000;
+
+// GET /api/tech/summary — compilation technique (technicien / admintech / direction)
 router.get('/summary', (req, res) => {
-  const roles = scopedRoles(req.user);
+  const roles = TECH_TEAM;
   const rolePh = roles.map(() => '?').join(',');
   const params = [...roles];
-  const scopeSql = `u.role IN (${rolePh})`;
 
   const perTech = db.prepare(`
     SELECT u.id, u.full_name AS technicien, u.region,
@@ -30,7 +35,7 @@ router.get('/summary', (req, res) => {
       COALESCE(SUM(r.maisons_desinfectees), 0) AS maisons_desinfectees,
       COUNT(r.id) AS nb_rapports
     FROM users u LEFT JOIN tech_reports r ON r.user_id = u.id
-    WHERE ${scopeSql} GROUP BY u.id ORDER BY technicien`).all(...params);
+    WHERE u.role IN (${rolePh}) GROUP BY u.id ORDER BY technicien`).all(...params);
 
   const totals = {
     menages_servis: perTech.reduce((a, x) => a + x.menages_servis, 0),
@@ -40,7 +45,6 @@ router.get('/summary', (req, res) => {
     maisons_desinfectees: perTech.reduce((a, x) => a + x.maisons_desinfectees, 0)
   };
 
-  // Consommation de produits + états de besoin consolidés
   const consos = db.prepare(`
     SELECT p.id AS product_id, p.name AS produit, p.category,
       COALESCE(SUM(it.quantite_utilisee), 0) AS quantite_utilisee,
@@ -52,7 +56,6 @@ router.get('/summary', (req, res) => {
     WHERE u.role IN (${rolePh})
     GROUP BY p.id ORDER BY etat_de_besoin DESC`).all(...params);
 
-  // Stock actuel de ces produits (pour comparer à l'état de besoin)
   const stock = db.prepare(`
     SELECT p.id AS product_id, COALESCE(SUM(si.quantity), 0) AS quantite_en_stock
     FROM products p LEFT JOIN stock_items si ON si.product_id = p.id
@@ -70,14 +73,11 @@ router.get('/summary', (req, res) => {
 // GET /api/tech/reports — les rapports (les siens / son équipe / tout)
 router.get('/reports', (req, res) => {
   const { date = '' } = req.query;
-  const roles = scopedRoles(req.user);
+  const roles = TECH_TEAM;
   const rolePh = roles.map(() => '?').join(',');
   const cond = [`r.user_id IN (SELECT id FROM users WHERE role IN (${rolePh}))`];
   const params = [...roles];
   if (date) { cond.push('r.date = ?'); params.push(date); }
-  if (!isSuper(req.user) && !roles.includes('technicien')) {
-    // admincomm : hors périmètre (déjà bloqué par le middleware)
-  }
   const where = `WHERE ${cond.join(' AND ')}`;
   const reports = db.prepare(`
     SELECT r.*, u.full_name AS technicien
@@ -93,18 +93,44 @@ router.get('/reports', (req, res) => {
 
 // POST /api/tech/reports — créer le rapport du jour (technicien)
 router.post('/reports', (req, res) => {
-  const { date, menages_servis = 0, poubelles_evacuees = 0, courses_camion = 0,
-    desinfections = 0, maisons_desinfectees = 0, commentaire = '', items = [] } = req.body || {};
+  const body = req.body || {};
+  const { date, commentaire = '', items = [] } = body;
 
-  const num = (v) => (Number.isFinite(Number(v)) && Number(v) >= 0 ? Number(v) : 0);
   const day = date || new Date().toISOString().slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return res.status(400).json({ error: 'Date invalide (format AAAA-MM-JJ).' });
+
+  // Validation stricte des quantités : entier entre 0 et MAX_QTY (une valeur négative
+  // ou aberrante est refusée au lieu d'être silencieusement corrigée/acceptée).
+  const fields = ['menages_servis', 'poubelles_evacuees', 'courses_camion', 'desinfections', 'maisons_desinfectees'];
+  const vals = {};
+  for (const f of fields) {
+    const raw = body[f];
+    const v = (raw === undefined || raw === null || raw === '') ? 0 : Number(raw);
+    if (!Number.isFinite(v) || v < 0 || v > MAX_QTY) {
+      return res.status(400).json({ error: `Valeur invalide pour « ${f} » (nombre entre 0 et ${MAX_QTY}).` });
+    }
+    vals[f] = v;
+  }
+
+  const itemsArr = Array.isArray(items) ? items : [];
+  for (const it of itemsArr) {
+    const q = Number(it.quantite_utilisee || 0);
+    const b = Number(it.etat_de_besoin || 0);
+    if (!Number.isFinite(q) || q < 0 || q > MAX_QTY || !Number.isFinite(b) || b < 0 || b > MAX_QTY) {
+      return res.status(400).json({ error: `Item invalide (quantité entre 0 et ${MAX_QTY}).` });
+    }
+  }
+
+  const hasData = fields.some((f) => vals[f] > 0) || itemsArr.length > 0 || String(commentaire).trim().length > 0;
+  if (!hasData) {
+    return res.status(400).json({ error: 'Rapport vide : renseignez au moins une quantité, un intrant utilisé ou un commentaire.' });
+  }
 
   const reportId = db.prepare(`
     INSERT INTO tech_reports (user_id, date, menages_servis, poubelles_evacuees, courses_camion, desinfections, maisons_desinfectees, commentaire)
     VALUES (?,?,?,?,?,?,?,?)`)
-    .run(req.user.id, day, num(menages_servis), num(poubelles_evacuees), num(courses_camion),
-      num(desinfections), num(maisons_desinfectees), String(commentaire || '').slice(0, 2000)).lastInsertRowid;
+    .run(req.user.id, day, vals.menages_servis, vals.poubelles_evacuees, vals.courses_camion,
+      vals.desinfections, vals.maisons_desinfectees, String(commentaire || '').slice(0, 2000)).lastInsertRowid;
 
   const insItem = db.prepare(`INSERT INTO tech_report_items (report_id, product_id, quantite_utilisee, etat_de_besoin) VALUES (?,?,?,?)`);
   const decStock = db.prepare('UPDATE stock_items SET quantity = quantity - ? WHERE id = ?');
@@ -112,15 +138,14 @@ router.post('/reports', (req, res) => {
   const getProduct = db.prepare('SELECT * FROM products WHERE id = ?');
 
   let itemsCount = 0;
-  for (const it of (Array.isArray(items) ? items : [])) {
+  for (const it of itemsArr) {
     const product = getProduct.get(it.product_id);
     if (!product) continue;
-    const qte = num(it.quantite_utilisee);
-    const besoin = num(it.etat_de_besoin);
+    const qte = Number(it.quantite_utilisee || 0);
+    const besoin = Number(it.etat_de_besoin || 0);
     if (qte <= 0 && besoin <= 0) continue;
     insItem.run(reportId, product.id, qte, besoin);
     itemsCount++;
-    // Décrément du stock de l'intrant (dotation du technicien d'abord, puis dépôt central)
     const row = db.prepare(`
       SELECT * FROM stock_items WHERE product_id = ? AND ((agent_id = ?) OR (agent_id IS NULL))
       ORDER BY (agent_id = ?) DESC`).all(product.id, req.user.id, req.user.id).find((x) => x.quantity > 0);
@@ -135,7 +160,6 @@ router.post('/reports', (req, res) => {
 });
 
 // ============ TOURNÉES : le superviseur technique / la direction assignent, le technicien valide ============
-// POST /api/tech/tournees — assigner une tournée (admintech / direction)
 router.post('/tournees', (req, res) => {
   if (!isSuper(req.user) && req.user.role !== 'admintech') return res.status(403).json({ error: 'Réservé au superviseur technique et à la direction.' });
   const { technicien_id, date, zone = '', menages_prevus = 0 } = req.body || {};
@@ -147,9 +171,8 @@ router.post('/tournees', (req, res) => {
   res.status(201).json({ id, date: day, technicien_id: tech.id });
 });
 
-// GET /api/tech/tournees — les tournées (le technicien : les siennes ; admintech : son équipe ; direction : tout)
 router.get('/tournees', (req, res) => {
-  const roles = scopedRoles(req.user);
+  const roles = TECH_TEAM;
   const rolePh = roles.map(() => '?').join(',');
   const rows = db.prepare(`
     SELECT tr.*, u.full_name AS technicien, a.full_name AS assigne_par
@@ -159,7 +182,6 @@ router.get('/tournees', (req, res) => {
   res.json(rows);
 });
 
-// POST /api/tech/tournees/:id/valider — le technicien valide SA tournée faite
 router.post('/tournees/:id/valider', (req, res) => {
   const tour = db.prepare('SELECT * FROM tournees WHERE id = ?').get(Number(req.params.id));
   if (!tour) return res.status(404).json({ error: 'Tournée introuvable.' });
@@ -172,7 +194,6 @@ router.post('/tournees/:id/valider', (req, res) => {
 });
 
 // ============ DEMANDES DE MATÉRIEL : le technicien signale, le superviseur traite ============
-// POST /api/tech/demandes — le technicien signale un besoin
 router.post('/demandes', (req, res) => {
   if (!isTechnician(req.user)) return res.status(403).json({ error: 'Réservé aux techniciens.' });
   const { product_id, quantite = 1, motif = '' } = req.body || {};
@@ -185,10 +206,9 @@ router.post('/demandes', (req, res) => {
   res.status(201).json({ id });
 });
 
-// GET /api/tech/demandes — les demandes (le technicien : les siennes ; superviseur technique/direction : de l'équipe/tout)
 router.get('/demandes', (req, res) => {
   if (req.user.role === 'admincomm') return res.status(403).json({ error: 'Demandes de matériel : hors de votre périmètre.' });
-  const roles = scopedRoles(req.user);
+  const roles = TECH_TEAM;
   const rolePh = roles.map(() => '?').join(',');
   const rows = db.prepare(`
     SELECT d.*, u.full_name AS technicien, p.name AS produit
@@ -198,7 +218,6 @@ router.get('/demandes', (req, res) => {
   res.json(rows);
 });
 
-// POST /api/tech/demandes/:id/traiter — le superviseur technique / la direction marque traitée
 router.post('/demandes/:id/traiter', (req, res) => {
   if (!isSuper(req.user) && req.user.role !== 'admintech') return res.status(403).json({ error: 'Réservé au superviseur technique et à la direction.' });
   const d = db.prepare('SELECT * FROM tech_demandes WHERE id = ?').get(Number(req.params.id));

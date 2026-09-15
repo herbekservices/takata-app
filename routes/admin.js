@@ -262,4 +262,56 @@ router.get('/audit', requireAuth, (req, res) => {
   res.json(rows);
 });
 
+// ---- Maintenance : nettoyage des données de test (direction uniquement) ----
+// Cible UNIQUEMENT les données de test : noms/préfixes « AUDIT- » et rapports
+// techniques manifestement aberrants (valeurs > borne) ou totalement vides.
+// Garde-fou : corps { confirm: 'PURGE' } obligatoire.
+const TEST_MAX = 100000;
+function testCounts() {
+  return {
+    customers: db.prepare("SELECT COUNT(*) c FROM customers WHERE name LIKE 'AUDIT-%'").get().c,
+    prospects: db.prepare("SELECT COUNT(*) c FROM prospects WHERE name LIKE 'AUDIT-%'").get().c,
+    tech_reports: db.prepare("SELECT COUNT(*) c FROM tech_reports WHERE commentaire LIKE 'AUDIT-%' OR menages_servis > ? OR poubelles_evacuees > ? OR courses_camion > ? OR desinfections > ? OR maisons_desinfectees > ? OR (commentaire = '' AND menages_servis = 0 AND poubelles_evacuees = 0 AND courses_camion = 0 AND desinfections = 0 AND maisons_desinfectees = 0)").get(TEST_MAX, TEST_MAX, TEST_MAX, TEST_MAX, TEST_MAX).c,
+    tech_demandes: db.prepare("SELECT COUNT(*) c FROM tech_demandes WHERE motif LIKE 'AUDIT-%'").get().c
+  };
+}
+
+router.get('/maintenance/preview', (req, res) => {
+  if (!isSuper(req.user)) return res.status(403).json({ error: 'Reserve a la direction.' });
+  res.json(testCounts());
+});
+
+router.post('/maintenance/purge-tests', (req, res) => {
+  if (!isSuper(req.user)) return res.status(403).json({ error: 'Reserve a la direction.' });
+  if (!req.body || req.body.confirm !== 'PURGE') {
+    return res.status(400).json({ error: "Confirmation requise : envoyer { \"confirm\": \"PURGE\" }." });
+  }
+  const out = {};
+  const tx = db.transaction(() => {
+    const cust = db.prepare("SELECT id FROM customers WHERE name LIKE 'AUDIT-%'").all().map((r) => r.id);
+    out.customers = cust.length;
+    if (cust.length) {
+      const ph = cust.map(() => '?').join(',');
+      out.commissions = db.prepare(`DELETE FROM commissions WHERE agent_id IN (SELECT agent_id FROM customers WHERE id IN (${ph}))`).run(...cust).changes;
+      out.payments = db.prepare(`DELETE FROM payments WHERE customer_id IN (${ph})`).run(...cust).changes;
+      out.installments = db.prepare(`DELETE FROM installments WHERE customer_id IN (${ph})`).run(...cust).changes;
+      out.installations = db.prepare(`DELETE FROM installations WHERE customer_id IN (${ph})`).run(...cust).changes;
+      out.customersDeleted = db.prepare(`DELETE FROM customers WHERE id IN (${ph})`).run(...cust).changes;
+    }
+    out.prospects = db.prepare("DELETE FROM prospects WHERE name LIKE 'AUDIT-%'").run().changes;
+    const rep = db.prepare("SELECT id FROM tech_reports WHERE commentaire LIKE 'AUDIT-%' OR menages_servis > ? OR poubelles_evacuees > ? OR courses_camion > ? OR desinfections > ? OR maisons_desinfectees > ? OR (commentaire = '' AND menages_servis = 0 AND poubelles_evacuees = 0 AND courses_camion = 0 AND desinfections = 0 AND maisons_desinfectees = 0)").all(TEST_MAX, TEST_MAX, TEST_MAX, TEST_MAX, TEST_MAX).map((r) => r.id);
+    out.techReports = rep.length;
+    if (rep.length) {
+      const ph = rep.map(() => '?').join(',');
+      out.techReportItems = db.prepare(`DELETE FROM tech_report_items WHERE report_id IN (${ph})`).run(...rep).changes;
+      out.techReportsDeleted = db.prepare(`DELETE FROM tech_reports WHERE id IN (${ph})`).run(...rep).changes;
+    }
+    out.techDemandes = db.prepare("DELETE FROM tech_demandes WHERE motif LIKE 'AUDIT-%'").run().changes;
+    out.notifications = db.prepare("DELETE FROM notifications WHERE title LIKE '%AUDIT-%' OR body LIKE '%AUDIT-%'").run().changes;
+  });
+  tx();
+  try { require('../lib/audit').logAudit(req, 'purge_tests', 'maintenance', 0); } catch (e) {}
+  res.json({ ok: true, purged: out });
+});
+
 module.exports = router;

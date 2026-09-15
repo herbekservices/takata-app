@@ -246,6 +246,7 @@
   // ============ CLIENTS ============
   async function customersView(params, q) {
     const search = (q && q.search) || '';
+    const role = (TAKATA.store.user || {}).role; const canSeeOwner = ["admin","admincomm","admintech","admingen"].includes(role);
     const rows = await get('/customers?search=' + encodeURIComponent(search));
     if (!rows) return emptyState(icon('wifi-off'), 'Hors ligne — réessayez plus tard');
     const isTech = (TAKATA.store.user || {}).role === 'technicien';

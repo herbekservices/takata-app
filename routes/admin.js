@@ -288,6 +288,9 @@ router.post('/maintenance/purge-tests', (req, res) => {
     return res.status(400).json({ error: "Confirmation requise : envoyer { \"confirm\": \"PURGE\" }." });
   }
   const out = {};
+  // Purge de test : on suspend temporairement les contraintes de cles etrangeres
+  // le temps de supprimer les donnees dans un ordre sur, puis on les reactive.
+  db.pragma('foreign_keys = OFF');
   const tx = db.transaction(() => {
     const cust = db.prepare("SELECT id FROM customers WHERE name LIKE 'AUDIT-%'").all().map((r) => r.id);
     out.customers = cust.length;
@@ -310,7 +313,7 @@ router.post('/maintenance/purge-tests', (req, res) => {
     out.techDemandes = db.prepare("DELETE FROM tech_demandes WHERE motif LIKE 'AUDIT-%'").run().changes;
     out.notifications = db.prepare("DELETE FROM notifications WHERE title LIKE '%AUDIT-%' OR body LIKE '%AUDIT-%'").run().changes;
   });
-  tx();
+  try { tx(); } finally { db.pragma('foreign_keys = ON'); }
   try { require('../lib/audit').logAudit(req, 'purge_tests', 'maintenance', 0); } catch (e) {}
   res.json({ ok: true, purged: out });
 });

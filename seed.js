@@ -47,8 +47,8 @@ const seed = db.transaction(() => {
 
   // ================= 2. FORMULES & INTRANTS (configuration métier) =================
   const products = [
-    ['Abonnement Standard (2 collectes/sem)', 'Formule collecte', 20000, 8000, 20, 1, 12],
-    ['Abonnement Premium (3 collectes/sem)', 'Formule collecte', 35000, 14000, 20, 1, 12],
+    ['Réabonnement Standard (2 collectes/sem)', 'Formule collecte', 20000, 8000, 20, 1, 12],
+    ['Réabonnement Premium (3 collectes/sem)', 'Formule collecte', 35000, 14000, 20, 1, 12],
     ['Séance à la carte (1 collecte)', 'Formule collecte', 2500, 1000, 20, 0, 1],
     ['Sacs poubelle (lot de 10)', 'Intrant', 5000, 3000, 0, 0, 1],
     ['Désinfectant (bidon 1 L)', 'Intrant', 15000, 9000, 0, 0, 1],

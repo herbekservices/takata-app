@@ -286,7 +286,7 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
       <div class="card">
         <div class="page-title" style="margin:0 0 12px;font-weight:600">Mouvement de stock (entrée / sortie)</div>
         <div class="field"><label for="m-product">Produit</label><select id="m-product">${(products || []).map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></div>
-${(agents || []).filter((x) => x.active).map((a) => `<option value="${a.id}">${esc(a.full_name)}</option>`).join('')}
+<div class="field"><label for="m-agent">Attribuer à (agent)</label><select id="m-agent"><option value="">Dépôt central (sans agent)</option>${(agents || []).filter((x) => x.active).map((a) => `<option value="${a.id}">${esc(a.full_name)}</option>`).join('')}</select></div>
         <div class="row"><div class="field"><label for="m-type">Type</label><select id="m-type"><option value="in">Entrée (+)</option><option value="out">Sortie (−)</option><option value="return">Retour</option></select></div>
         <div class="field"><label for="m-qty">Quantité</label><input id="m-qty" type="number" value="1"></div></div>
         <button class="btn" onclick="TAKATA_ADMIN.doMove()">Enregistrer le mouvement</button>

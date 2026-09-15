@@ -159,8 +159,16 @@ router.delete('/customers/:id', guardCommercial, (req, res) => {
   // Refus explicite si le client a une activité (paiements, installations, échéances)
   const refs = db.prepare(`SELECT
       (SELECT COUNT(*) FROM payments WHERE customer_id = ?) +
-      (SELECT COUNT(*) FROM installations WHERE customer_id = ?) +
+      (SELECT COUNT(*) FROM installations WHERE customer_id = ? AND cancelled = 0) +
       (SELECT COUNT(*) FROM installments WHERE customer_id = ?) AS c`).get(c.id, c.id, c.id);
+  // Purge des references annulees (abonnements annules + echeances restantes) pour permettre
+  // la suppression d'un client dont le contrat a ete annule par la direction.
+  try {
+    // les commissions liees a un abonnement annule sont annulees (traces dans le journal)
+    db.prepare("DELETE FROM commissions WHERE installation_id IN (SELECT id FROM installations WHERE customer_id = ? AND cancelled = 1)").run(c.id);
+    db.prepare("DELETE FROM installments WHERE customer_id = ? AND installation_id IN (SELECT id FROM installations WHERE customer_id = ? AND cancelled = 1)").run(c.id, c.id);
+    db.prepare("DELETE FROM installations WHERE customer_id = ? AND cancelled = 1").run(c.id);
+  } catch (e) { console.error('[purge] echec : ' + e.message); } // purge des references annulees
   if (refs.c > 0) {
     return res.status(409).json({ error: 'Suppression impossible : ce client possède des paiements, installations ou échéances.' });
   }
@@ -335,6 +343,27 @@ router.post('/installations', guardCommercial, (req, res) => {
   res.status(201).json({ id });
 });
 
+
+// POST /api/installations/:id/cancel — annuler un abonnement (direction/superviseurs)
+// Annule les échéances en attente et restitue le stock éventuel.
+router.post('/installations/:id/cancel', (req, res) => {
+  if (!isAdminLike(req.user)) return res.status(403).json({ error: 'Réservé à la direction et aux superviseurs.' });
+  const ins = db.prepare('SELECT * FROM installations WHERE id = ?').get(req.params.id);
+  if (!ins) return res.status(404).json({ error: 'Abonnement introuvable.' });
+  if (ins.cancelled) return res.status(400).json({ error: 'Cet abonnement est déjà annulé.' });
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE installations SET cancelled = 1, cancelled_at = datetime('now','localtime') WHERE id = ?").run(ins.id);
+    db.prepare("DELETE FROM installments WHERE installation_id = ? AND status = 'pending'").run(ins.id);
+    const row = db.prepare('SELECT * FROM stock_items WHERE product_id = ? AND (agent_id = ? OR agent_id IS NULL) ORDER BY (agent_id = ?) DESC LIMIT 1').get(ins.product_id, ins.agent_id, ins.agent_id);
+    if (row) {
+      db.prepare('UPDATE stock_items SET quantity = quantity + 1 WHERE id = ?').run(row.id);
+      db.prepare("INSERT INTO stock_movements (product_id, agent_id, type, quantity, note) VALUES (?,?, 'annulation', 1, ?)").run(ins.product_id, ins.agent_id, 'Annulation abonnement #' + ins.id);
+    }
+  });
+  tx();
+  try { require('../lib/audit').logAudit(req, 'annulation_abonnement', 'installation', ins.id); } catch (e) {}
+  res.json({ ok: true, cancelled: true });
+});
 router.get('/installations/:id', (req, res) => {
   const i = db.prepare(`
     SELECT i.*, c.name AS customer, p.name AS product FROM installations i

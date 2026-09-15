@@ -243,6 +243,12 @@
     `;
   }
 
+
+  async function cancelInstallation(id) {
+    if (!confirm('Annuler cet abonnement ? Les échéances en attente seront supprimées et le stock restitué.')) return;
+    try { await TAKATA.request('POST', '/api/installations/' + id + '/cancel', {}); toast('Abonnement annulé ✅ stock restitué'); renderRoute(); }
+    catch (e) { toast(e.message || 'Erreur', true); }
+  }
   // ============ CLIENTS ============
   async function customersView(params, q) {
     const search = (q && q.search) || '';
@@ -497,6 +503,8 @@ toast('Abonnement souscrit');
         <div class="kv"><span>Réabonnement (mensuel)</span><b>${money(i.price)}</b></div>
         <div class="kv"><span>Avancement paiements</span><b>${pct}% (${money(paidAmt)} / ${money(totalInstall || i.price)})</b></div>
         ${totalInstall ? `<progress max="100" value="${pct}"></progress>` : ''}
+        ${['admin','admingen','admincomm','admintech'].includes((TAKATA.store.user || {}).role) && !i.cancelled ? `<hr class="divider"><button class="btn secondary" onclick="TAKATA_VIEWS.cancelInstallation(${i.id})">Annuler cet abonnement (restitue le stock)</button>` : ''}
+        ${i.cancelled ? '<div class="muted" style="margin-top:8px">Abonnement annulé le ' + esc(i.cancelled_at || '') + '</div>' : ''}
       </div>
       <div class="section-title">Échéancier (${(i.installments || []).length})</div>
       <div class="list">
@@ -885,7 +893,10 @@ toast('Abonnement souscrit');
   async function techDayView() {
     const me = TAKATA.store.user || {};
     const today = new Date().toISOString().slice(0, 10);
-    const prods = ((await get('/products')) || []).filter((p) => p.category === 'Intrant');
+    const allProds = (await get('/products')) || [];
+    const stockNow = (await get('/stock')) || [];
+    const intrants = allProds.filter((p) => p.category === 'Intrant');
+    const prods = intrants.length ? intrants : stockNow.map((s) => ({ id: s.product_id, name: s.name }));
     return `
       <div class="page-title">Rapport du jour — ${esc(me.full_name || '')}</div>
       <form class="card" onsubmit="return TAKATA_VIEWS.submitTechReport(event)">

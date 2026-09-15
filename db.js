@@ -318,5 +318,10 @@ db.exec("CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY AUTOINCREM
 const _userCols = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
 if (!_userCols.includes('totp_secret')) db.exec('ALTER TABLE users ADD COLUMN totp_secret TEXT');
 if (!_userCols.includes('totp_enabled')) db.exec('ALTER TABLE users ADD COLUMN totp_enabled INTEGER NOT NULL DEFAULT 0');
+// --- Annulation d abonnement (migration additive) ---
+const _insCols = db.prepare('PRAGMA table_info(installations)').all().map((c) => c.name);
+if (!_insCols.includes('cancelled')) db.exec('ALTER TABLE installations ADD COLUMN cancelled INTEGER NOT NULL DEFAULT 0');
+if (!_insCols.includes('cancelled_at')) db.exec('ALTER TABLE installations ADD COLUMN cancelled_at TEXT');
+
 module.exports = db;
 module.exports.closeDatabase = closeDatabase;

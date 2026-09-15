@@ -57,7 +57,12 @@ const seed = db.transaction(() => {
     db.prepare(`INSERT INTO products (name, category, price, cost, commission_rate, payg, nb_installments) VALUES (?,?,?,?,?,?,?)`)
       .run(n, c, pr, co, cr, payg, nb).lastInsertRowid);
 
-  // ================= 3. DÉMONSTRATION (uniquement avec --demo) =================
+  // Dotation par metier : sacs poubelle aux commerciaux, desinfectant aux techniciens
+const _sacs = productIds[3]; // Sacs poubelle
+const _desinf = productIds[4]; // Desinfectant
+agentIds.forEach((id) => db.prepare('INSERT OR IGNORE INTO stock_items (product_id, agent_id, quantity) VALUES (?,?,?)').run(_sacs, id, 50));
+techIds.forEach((id) => db.prepare('INSERT OR IGNORE INTO stock_items (product_id, agent_id, quantity) VALUES (?,?,?)').run(_desinf, id, 20));
+// ================= 3. DÉMONSTRATION (uniquement avec --demo) =================
   if (DEMO) {
     // Stock de départ (dotations)
     const stockDefs = [

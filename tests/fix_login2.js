@@ -107,7 +107,7 @@ rep(
     '      } else if (err.status === 429) {',
     '        loginError(cross + \' \' + (err.message || \'Trop de tentatives. Patientez un instant puis réessayez.\'));',
     '      } else if (err.status === 0) {',
-    '        loginError(cross + \' Serveur non joignable — démarrez le serveur TAKATA (start-takata.bat) et réessayez.\');',
+    '        loginError(cross + \' Serveur non joignable — démarrez le serveur Takata Kwetu (start-takata.bat) et réessayez.\');',
     '      } else {',
     '        loginError(cross + \' \' + (err.message || \'Erreur de connexion\'));',
     '      }',

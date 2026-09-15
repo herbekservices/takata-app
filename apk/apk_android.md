@@ -1,6 +1,6 @@
-# TAKATA sur Android — 3 voies d'installation (PWA, APK Capacitor, TWA)
+# Takata Kwetu sur Android — 3 voies d'installation (PWA, APK Capacitor, TWA)
 
-L'application TAKATA est une **PWA** : le navigateur Android (Chrome) l'installe déjà comme une vraie application plein écran. Pour un **vrai APK** distribuable à chaque membre, deux voies techniques existent. Dans tous les cas, **l'application téléphone se connecte au serveur TAKATA** (Node/Express + SQLite) qui doit être démarré et joignable depuis le réseau du téléphone.
+L'application Takata Kwetu est une **PWA** : le navigateur Android (Chrome) l'installe déjà comme une vraie application plein écran. Pour un **vrai APK** distribuable à chaque membre, deux voies techniques existent. Dans tous les cas, **l'application téléphone se connecte au serveur Takata Kwetu** (Node/Express + SQLite) qui doit être démarré et joignable depuis le réseau du téléphone.
 
 ---
 
@@ -9,7 +9,7 @@ L'application TAKATA est une **PWA** : le navigateur Android (Chrome) l'installe
 1. Démarrez le serveur sur le PC : `npm start` (http://localhost:8080 — il écoute sur toutes les interfaces réseau).
 2. Sur le téléphone Android, connectez-vous au **même Wi-Fi** que le PC et ouvrez Chrome à l'adresse : `http://<IP-du-PC>:8080`
    (trouvez l'IP du PC avec `ipconfig` → adresse IPv4, ex. `http://192.168.1.10:8080`).
-3. Menu Chrome ⋮ → **« Ajouter à l'écran d'accueil »** → l'icône TAKATA s'installe et s'ouvre en plein écran (comme une app native, avec son service worker hors-ligne).
+3. Menu Chrome ⋮ → **« Ajouter à l'écran d'accueil »** → l'icône Takata Kwetu s'installe et s'ouvre en plein écran (comme une app native, avec son service worker hors-ligne).
 
 ✅ Aucun APK, mise à jour automatique (le SW versionné `takata-v5` détecte les mises à jour).
 ⚠️ Fonctionne sur le même réseau Wi-Fi que le serveur (pré-production).

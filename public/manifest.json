@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "TAKATA — Collecte des déchets ménagers",
-  "short_name": "TAKATA",
-  "description": "Application de terrain TAKATA : abonnements de collecte des déchets, clients, encaissements, tournées techniques, stock et supervision d'équipes.",
+  "name": "Takata Kwetu — Collecte des déchets ménagers",
+  "short_name": "Takata Kwetu",
+  "description": "Application de terrain Takata Kwetu : abonnements de collecte des déchets, clients, encaissements, tournées techniques, stock et supervision d'équipes.",
   "lang": "fr",
   "start_url": "/",
   "scope": "/",

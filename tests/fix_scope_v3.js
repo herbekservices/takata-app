@@ -121,7 +121,7 @@ else {
     "      db.prepare(`UPDATE installments SET status='paid', paid_date=date('now','localtime'), payment_id=? WHERE id=? AND status='pending'`)",
     "        .run(info.lastInsertRowid, installment.id);",
     "    }",
-    "    // Commission TAKATA sur encaissement hors-ligne (identique au chemin en ligne) :",
+    "    // Commission Takata Kwetu sur encaissement hors-ligne (identique au chemin en ligne) :",
     "    // renouvellement d'abonnement = 5 % ; séance à la carte = commission_rate (20 % → 500 FC)",
     "    const productRow = installation_id",
     "      ? db.prepare(`SELECT p.* FROM installations i JOIN products p ON p.id = i.product_id WHERE i.id = ?`).get(installation_id)",

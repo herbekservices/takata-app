@@ -1,4 +1,4 @@
-// tests/roles_test.js — Vérification du modèle de rôles TAKATA (deep_delivery)
+// tests/roles_test.js — Vérification du modèle de rôles Takata Kwetu (deep_delivery)
 // Usage : node tests/roles_test.js   (serveur attendu sur http://localhost:8080)
 /* eslint-disable no-console */
 const BASE = process.env.BASE_URL || 'http://localhost:8080';
@@ -108,7 +108,7 @@ check('adminGEN overview : ' + ov.customers + ' abonnés / ' + ov.installations 
   const cid = created.data.id;
   const found = await api('GET', '/customers/' + cid, null, agent1.token);
   check('client relisible via GET /customers/' + cid, found.status === 200 && found.data.name === 'Persistance Test');
-  // Paiement séance (client Patrick Musasa, seed) → commission 20 % = 500 FC (règle TAKATA)
+  // Paiement séance (client Patrick Musasa, seed) → commission 20 % = 500 FC (règle Takata Kwetu)
   const agent3 = await login('agent3', 'agent123');
   const { data: allCust } = await api('GET', '/customers', null, admin.token);
   const pat = allCust.find((x) => x.name.includes('Patrick'));

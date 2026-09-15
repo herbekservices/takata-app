@@ -1,4 +1,4 @@
-// db.js — Base de données SQLite (better-sqlite3) + schéma TAKATA
+// db.js — Base de données SQLite (better-sqlite3) + schéma Takata Kwetu
 const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
@@ -288,7 +288,7 @@ function backupDatabase() {
     console.log('💾 Sauvegarde : ' + file);
     return file;
   } catch (e) {
-    console.error('[TAKATA] Sauvegarde impossible : ' + (e.message || e));
+    console.error('[Takata Kwetu] Sauvegarde impossible : ' + (e.message || e));
     return null;
   }
 }

@@ -1,4 +1,4 @@
-// server-watchdog.js — maintient le serveur TAKATA en marche en permanence
+// server-watchdog.js — maintient le serveur Takata Kwetu en marche en permanence
 // Usage : node server-watchdog.js   (ou double-clic sur start-takata.bat)
 // Relance automatiquement le serveur s'il s'arrête (crash, erreur, Ctrl+C sur le fils).
 const { spawn } = require('child_process');
@@ -10,7 +10,7 @@ function start() {
   const child = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname), stdio: 'inherit' });
   lastStart = Date.now();
   const stamp = new Date().toLocaleTimeString('fr-FR');
-  console.log(`[${stamp}] 🚀 Serveur TAKATA démarré sur http://localhost:8080 (pid ${child.pid})`);
+  console.log(`[${stamp}] 🚀 Serveur Takata Kwetu démarré sur http://localhost:8080 (pid ${child.pid})`);
   child.on('exit', (code) => {
     const uptime = Date.now() - lastStart;
     if (uptime > 60000) restarts = 0; // run stable : on remet le compteur à zéro

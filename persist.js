@@ -35,7 +35,7 @@ async function backupNow(db) {
     const cur = await api(`https://api.github.com/repos/${REPO}/contents/${targetPath}?ref=${BRANCH}`);
     if (cur.status === 200) sha = (await cur.json()).sha;
     const body = JSON.stringify({
-      message: 'sauvegarde base TAKATA ' + new Date().toISOString(),
+      message: 'sauvegarde base Takata Kwetu ' + new Date().toISOString(),
       content,
       sha,
       branch: BRANCH,

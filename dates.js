@@ -1,4 +1,4 @@
-// dates.js — Utilitaires de dates TAKATA
+// dates.js — Utilitaires de dates Takata Kwetu
 // Corrige D-03 : débordement setMonth (31 janv. + 1 mois → 3 mars) et dates UTC décalées (toISOString).
 'use strict';
 

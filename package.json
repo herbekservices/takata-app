@@ -1,7 +1,7 @@
 {
   "name": "takata",
   "version": "3.0.0",
-  "description": "TAKATA — PWA de terrain pour la collecte des déchets ménagers (Kolwezi & Lubumbashi) : abonnements, clients, encaissements, tournées techniques, stock, commissions, supervision d'équipes et mode hors-ligne.",
+  "description": "Takata Kwetu — PWA de terrain pour la collecte des déchets ménagers (Kolwezi & Lubumbashi) : abonnements, clients, encaissements, tournées techniques, stock, commissions, supervision d'équipes et mode hors-ligne.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

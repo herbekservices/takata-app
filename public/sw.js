@@ -1,4 +1,4 @@
-// Service Worker TAKATA — mode hors-ligne
+// Service Worker Takata Kwetu — mode hors-ligne
 // Numéro de version : à incrémenter à chaque mise à jour du shell (l'appel reg.update()
 // au démarrage + Cache-Control no-cache sur /sw.js garantissent la détection rapide).
 const CACHE = 'takata-v7';

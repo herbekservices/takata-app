@@ -1,4 +1,4 @@
-# TAKATA — image Docker de production (Node + better-sqlite3 + PWA)
+# Takata Kwetu — image Docker de production (Node + better-sqlite3 + PWA)
 # Le disque persistant doit être monté sur /data (TAKATA_DB=/data/takata.db)
 FROM node:22-bookworm-slim
 

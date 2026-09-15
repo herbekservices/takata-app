@@ -1,4 +1,4 @@
-// api.js — Client API TAKATA : token, fetch, mode hors-ligne (file d'attente)
+// api.js — Client API Takata Kwetu : token, fetch, mode hors-ligne (file d'attente)
 (function () {
   const API = '/api';
   const TOKEN_KEY = 'takata_token';
@@ -50,7 +50,7 @@
       });
     } catch (e) {
       clearTimeout(timer);
-      throw new ApiError(0, 'Serveur non joignable — vérifiez que le serveur TAKATA est démarré (npm start) ou votre connexion.');
+      throw new ApiError(0, 'Serveur non joignable — vérifiez que le serveur Takata Kwetu est démarré (npm start) ou votre connexion.');
     }
     clearTimeout(timer);
     if (res.status === 401 && !opts.skipAuthRedirect) {

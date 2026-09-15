@@ -1,4 +1,4 @@
-// scripts/generate-audit.js — Rapport d'audit TAKATA (DOCX, style Fathom : sobre, tableaux précis)
+// scripts/generate-audit.js — Rapport d'audit Takata Kwetu (DOCX, style Fathom : sobre, tableaux précis)
 const fs = require('fs');
 const path = require('path');
 const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle } = require('docx');
@@ -38,18 +38,18 @@ const children = [];
 
 // ===== Titre =====
 children.push(new Paragraph({ spacing: { before: 120, after: 200 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'RAPPORT D\u2019AUDIT', bold: true, size: 52, color: GREEN })] }));
-children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, children: [new TextRun({ text: 'TAKATA — Application mobile des agents de terrain (PWA)', size: 26, color: NAVY })] }));
+children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, children: [new TextRun({ text: 'Takata Kwetu — Application mobile des agents de terrain (PWA)', size: 26, color: NAVY })] }));
 children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 300 }, children: [new TextRun({ text: 'Campagne 2026-08-24/25 · Serveur de test : http://localhost:8080 · Style : diagnostic scientifique (04 Fathom)', size: 18, italics: true, color: GRAY })] }));
 
 // ===== 1. Résumé exécutif =====
 children.push(h1('1. Résumé exécutif'));
-children.push(p('L\u2019audit complet de TAKATA (12 modules, API REST + PWA hors-ligne) a été mené par trois auditeurs indépendants (fonctionnel adversarial, sécurité, UX/PWA/performance) complétés par un réviseur des correctifs. 30 défauts ont été confirmés : 2 bloquants, 21 majeurs, 26 mineurs (dont 7 failles sécurité sans blocant).'));
+children.push(p('L\u2019audit complet de Takata Kwetu (12 modules, API REST + PWA hors-ligne) a été mené par trois auditeurs indépendants (fonctionnel adversarial, sécurité, UX/PWA/performance) complétés par un réviseur des correctifs. 30 défauts ont été confirmés : 2 bloquants, 21 majeurs, 26 mineurs (dont 7 failles sécurité sans blocant).'));
 children.push(p('Tous les défauts bloquants et majeurs ont été corrigés et vérifiés (script tests/fix-verify.js : 30/30), puis confirmés par une revue indépendante des correctifs : 47/47 défauts traités, 0 échec, 0 régression identifiée (les 2 correctifs initialement partiels — accessibilité des formulaires admin, code mort — ont été complétés avant clôture). Aucune régression : smoke-test API 44/44, rendu navigateur 7/7 avec 0 erreur JS, et latences médianes réduites de 60 à 80 % sur les endpoints mesurés grâce à la compression HTTP et au durcissement général.'));
 children.push(p('L\u2019application corrigée est accessible sur l\u2019URL de test stable http://localhost:8080 (base de démonstration propre re-seedée). Les comptes de test sont documentés (admin/admin123, agent1|2|3/agent123).'));
 
 // ===== 2. Périmètre et méthode =====
 children.push(h1('2. Périmètre et méthode'));
-children.push(bullet('Cible : PWA TAKATA — Node.js/Express/SQLite, front vanilla, service worker, 12 modules métier.'));
+children.push(bullet('Cible : PWA Takata Kwetu — Node.js/Express/SQLite, front vanilla, service worker, 12 modules métier.'));
 children.push(bullet('3 auditeurs indépendants (sous-agents) : tests adversariaux (131 contrôles), sécurité (81 contrôles), UX/PWA/perf (21 constats + mesures HTTP).'));
 children.push(bullet('Corrections appliquées par sévérité décroissante, puis non-régression après chaque lot (smoke 44/44, rendu 7/7, fix-verify 30/30).'));
 children.push(bullet('Performance mesurée avant/après (20 itérations/endpoint, médianes et p95).'));
@@ -131,7 +131,7 @@ children.push(p('Verdict du réviseur : correctifs validés dans leur ensemble, 
 // ===== 10. Conclusion =====
 children.push(h1('10. Conclusion sur la qualité globale'));
 children.push(p('La structure métier (modèle relationnel, calcul PAYG, appartenance stricte par agent, idempotence de la synchronisation) était saine : l\u2019audit n\u2019a trouvé aucune faille bloquante de sécurité (pas d\u2019IDOR, pas d\u2019injection SQL, pas de XSS exploitable) ni de corruption de données. Les faiblesses identifiées étaient concentrées sur la validation des entrées (500 au lieu de 400), l\u2019intégrité du stock (survente), la reprise hors-ligne et le confort d\u2019utilisation.'));
-children.push(p('Après corrections et validation complète, TAKATA est livrable en qualité de préproduction : fonctionnelle de bout en bout, durcie, accessible et mesurable. Les suivis recommandés : déploiement HTTPS pour l\u2019installation PWA mobile, minification des assets (pipeline de build), migration des gestionnaires inline vers addEventListener pour resserrer la CSP, et tests sur appareils réels (réseau 3G).'));
+children.push(p('Après corrections et validation complète, Takata Kwetu est livrable en qualité de préproduction : fonctionnelle de bout en bout, durcie, accessible et mesurable. Les suivis recommandés : déploiement HTTPS pour l\u2019installation PWA mobile, minification des assets (pipeline de build), migration des gestionnaires inline vers addEventListener pour resserrer la CSP, et tests sur appareils réels (réseau 3G).'));
 
 const doc = new Document({ styles: { default: { document: { run: { font: 'Calibri', size: 21 } } } }, sections: [{ children }] });
 Packer.toBuffer(doc).then((buf) => {

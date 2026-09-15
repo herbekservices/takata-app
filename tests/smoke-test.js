@@ -1,4 +1,4 @@
-// tests/smoke-test.js — Test de bout en bout de l'API TAKATA
+// tests/smoke-test.js — Test de bout en bout de l'API Takata Kwetu
 // Usage : node tests/smoke-test.js [baseUrl]
 const BASE = process.argv[2] || 'http://localhost:8080';
 let passed = 0, failed = 0;
@@ -19,11 +19,11 @@ function check(name, cond, detail) {
 }
 
 (async () => {
-  console.log('🧪 TAKATA smoke test —', BASE, '\n');
+  console.log('🧪 Takata Kwetu smoke test —', BASE, '\n');
 
   // 1. Santé
   const health = await call('GET', '/api/health');
-  check('Santé publique', health.status === 200 && health.data.app === 'TAKATA');
+  check('Santé publique', health.status === 200 && health.data.app === 'Takata Kwetu');
 
   // 2. Connexion admin
   const bad = await call('POST', '/api/auth/login', { username: 'admin', password: 'mauvais' });
@@ -208,5 +208,5 @@ function check(name, cond, detail) {
 
   console.log(`\n📊 Résultat : ${passed} réussis, ${failed} échecs`);
   if (failed) { console.log('\nDétails des échecs :'); errors.forEach((e) => console.log(' ', e)); process.exit(1); }
-  console.log('✅ TAKATA opérationnel de bout en bout.');
+  console.log('✅ Takata Kwetu opérationnel de bout en bout.');
 })();

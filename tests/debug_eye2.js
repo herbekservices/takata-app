@@ -8,7 +8,7 @@ const puppeteer = require('puppeteer-core');
   });
   const page = await browser.newPage();
   await page.setViewport({ width: 420, height: 880, isMobile: true });
-  page.on('console', (m) => { if (m.type() === 'error' || m.text().includes('TAKATA')) console.log('[console]', m.text().slice(0, 150)); });
+  page.on('console', (m) => { if (m.type() === 'error' || m.text().includes('Takata Kwetu')) console.log('[console]', m.text().slice(0, 150)); });
   page.on('pageerror', (e) => console.log('[pageerror]', e.message.slice(0, 150)));
   await page.goto('http://localhost:8080/#/login', { waitUntil: 'networkidle0', timeout: 30000 });
   await new Promise((r) => setTimeout(r, 1000));

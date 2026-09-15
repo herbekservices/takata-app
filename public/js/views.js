@@ -104,7 +104,7 @@
     <div class="auth-wrap">
       <div class="auth-card">
         <div class="auth-logo">${icon('leaf', 30)}</div>
-        <div class="auth-title">TAKATA</div>
+        <div class="auth-title">Takata Kwetu</div>
         
         <form id="login-form" onsubmit="return TAKATA_VIEWS.submitLogin(event)">
           <div class="field" id="field-user">
@@ -192,7 +192,7 @@
       } else if (err.status === 429) {
         loginError(cross + ' ' + (err.message || 'Trop de tentatives. Patientez un instant puis réessayez.'));
       } else if (err.status === 0) {
-        loginError(cross + ' Serveur non joignable — démarrez le serveur TAKATA (start-takata.bat) et réessayez.');
+        loginError(cross + ' Serveur non joignable — démarrez le serveur Takata Kwetu (start-takata.bat) et réessayez.');
       } else {
         loginError(cross + ' ' + (err.message || 'Erreur de connexion'));
       }

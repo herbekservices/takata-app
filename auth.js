@@ -58,7 +58,7 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// --- Rôles TAKATA ---
+// --- Rôles Takata Kwetu ---
 // admin / admingen : direction (tout voir, gérer les comptes)
 // admincomm       : supervision des équipes commerciales
 // admintech       : supervision des équipes techniques

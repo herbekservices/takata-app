@@ -1,4 +1,4 @@
-# TAKATA — Guide de déploiement en ligne (14/09/2026)
+# Takata Kwetu — Guide de déploiement en ligne (14/09/2026)
 
 Paquet **prêt à déployer** : `Dockerfile`, `docker-entrypoint.sh`, `.dockerignore`, `render.yaml`, `fly.toml`, `.env.example`.
 Le code a été préparé pour la production : base déplaçable (`TAKATA_DATA_DIR` / `TAKATA_DB`), `TRUST_PROXY` (vraie IP client derrière un proxy), sauvegarde quotidienne dans `<données>/backups/`, arrêt gracieux, alerte si comptes de démo actifs.
@@ -13,7 +13,7 @@ Le code a été préparé pour la production : base déplaçable (`TAKATA_DATA_D
 1. Pousser le code dans un dépôt **GitHub** (privé) :
    ```bash
    cd projects/website-c51da70ab798b3e76b83c7c4
-   git init && git add -A && git commit -m "TAKATA v3 déploiement"
+   git init && git add -A && git commit -m "Takata Kwetu v3 déploiement"
    git remote add origin https://github.com/<votre-compte>/takata.git
    git push -u origin main
    ```
@@ -53,7 +53,7 @@ TAKATA_DATA_DIR=/var/lib/takata TAKATA_DB=/var/lib/takata/takata.db node seed.js
 Service systemd `/etc/systemd/system/takata.service` :
 ```ini
 [Unit]
-Description=TAKATA
+Description=Takata Kwetu
 After=network.target
 [Service]
 WorkingDirectory=/opt/takata
@@ -97,7 +97,7 @@ docker run -d -p 8080:8080 -v takata_data:/data --name takata takata
 1. Construire l'APK (Java 17 + Android Studio SDK 34 — voir `apk/apk_android.md`), en pointant `capacitor.config.json` sur l'URL déployée.
 2. Héberger l'APK :
    - **GitHub Releases** (gratuit, permanent) : créer une release, glisser l'APK → lien direct `github.com/<compte>/takata/releases/download/v1.0/takata.apk`.
-   - **Sur le site TAKATA** : déposer l'APK dans `public/download/` — le fichier `public/_headers` (Netlify/Vercel) et le modèle Apache `.htaccess` fournis déclarent le bon type MIME `application/vnd.android.package-archive` (indispensable pour que le téléphone reconnaisse l'installeur).
+   - **Sur le site Takata Kwetu** : déposer l'APK dans `public/download/` — le fichier `public/_headers` (Netlify/Vercel) et le modèle Apache `.htaccess` fournis déclarent le bon type MIME `application/vnd.android.package-archive` (indispensable pour que le téléphone reconnaisse l'installeur).
    - Page prête : `public/download.html` (boutons APK + PWA, à adapter après la première release).
 3. Google Play Store : **25 $ une fois** (compte développeur à vie) — validation de quelques heures à quelques jours, mises à jour automatiques, confiance maximale.
 

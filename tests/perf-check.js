@@ -1,4 +1,4 @@
-// tests/perf-check.js — mesure de latence des endpoints critiques TAKATA
+// tests/perf-check.js — mesure de latence des endpoints critiques Takata Kwetu
 // Usage : node tests/perf-check.js [url] [iterations] [outFile]
 const BASE = process.argv[2] || 'http://localhost:8080';
 const N = parseInt(process.argv[3] || '20', 10);

@@ -1,4 +1,4 @@
-// security-test.js — Audit sécurité TAKATA (preuves non destructives, cible localhost:8080)
+// security-test.js — Audit sécurité Takata Kwetu (preuves non destructives, cible localhost:8080)
 // Usage : node tests/security-test.js
 // Couverture : IDOR, ACL admin, manipulation de token, rate-limit, fuites d'info,
 //              injection SQL, XSS stocké, en-têtes HTTP, révocation de sessions.

@@ -1,4 +1,4 @@
-// start.js — Démarrage TAKATA : restaure la base depuis le dépôt GitHub privé si absente,
+// start.js — Démarrage Takata Kwetu : restaure la base depuis le dépôt GitHub privé si absente,
 // puis lance le serveur (hébergeurs à système de fichiers éphémère, ex. Render plan gratuit).
 'use strict';
 const fs = require('fs');

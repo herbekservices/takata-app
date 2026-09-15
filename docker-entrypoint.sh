@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAKATA — entrée Docker : initialise la base au premier démarrage puis lance le serveur
+# Takata Kwetu — entrée Docker : initialise la base au premier démarrage puis lance le serveur
 set -e
 
 DB="${TAKATA_DB:-/data/takata.db}"

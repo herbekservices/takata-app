@@ -139,7 +139,7 @@ function notif2(userId, title, body) {
 router.post('/2fa/setup', requireAuth, (req, res) => {
   const secret = totp.generateSecret();
   db.prepare('UPDATE users SET totp_secret = ?, totp_enabled = 0 WHERE id = ?').run(secret, req.user.id);
-  res.json({ secret, uri: totp.otpauthUri(secret, req.user.username), issuer: 'TAKATA' });
+  res.json({ secret, uri: totp.otpauthUri(secret, req.user.username), issuer: 'Takata Kwetu' });
 });
 
 // POST /api/auth/2fa/enable { code }

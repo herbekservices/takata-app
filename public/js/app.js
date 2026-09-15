@@ -1,4 +1,4 @@
-// app.js — Routeur TAKATA, topbar, navigation basse, PWA, hors-ligne
+// app.js — Routeur Takata Kwetu, topbar, navigation basse, PWA, hors-ligne
 /* global TAKATA, TAKATA_VIEWS, TAKATA_ADMIN */
 (function () {
   const app = document.getElementById('app');
@@ -130,7 +130,7 @@ const V = TAKATA_VIEWS;
     <button class="nav-arrow" id="nav-back" aria-label="Retour" onclick="history.back()">‹</button>
     <button class="nav-arrow" id="nav-forward" aria-label="Avancer" onclick="history.forward()">›</button>
         <div class="logo" aria-hidden="true">${icon('leaf', 22)}</div>
-        <div><h1>TAKATA</h1><div class="sub">${esc(title)} · ${esc(user.full_name.split(' ')[0])} <span style="opacity:.75">(${roleLabel})</span></div></div>
+        <div><h1>Takata Kwetu</h1><div class="sub">${esc(title)} · ${esc(user.full_name.split(' ')[0])} <span style="opacity:.75">(${roleLabel})</span></div></div>
         <div class="row" style="gap:6px;flex:none">
           <button class="btn-icon" aria-label="Notifications" style="position:relative" onclick="location.hash='#/notifications'">${icon('bell')}<span id="notif-badge" style="display:none;position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;font-size:9px;border-radius:99px;padding:1px 4px">0</span></button>
         </div>

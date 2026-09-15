@@ -1,4 +1,4 @@
-// server.js — Serveur TAKATA (Express + SQLite + PWA statique)
+// server.js — Serveur Takata Kwetu (Express + SQLite + PWA statique)
 const express = require('express');
 const path = require('path');
 const compression = require('compression');
@@ -11,7 +11,7 @@ const syncRoutes = require('./routes/sync');
 const techRoutes = require('./routes/tech');
 
 const app = express();
-const PORT = process.env.PORT || 8080; // défaut : 8080 (environnement TAKATA pre-prod)
+const PORT = process.env.PORT || 8080; // défaut : 8080 (environnement Takata Kwetu pre-prod)
 
 app.disable('x-powered-by');
 
@@ -89,7 +89,7 @@ app.use('/api', (req, res, next) => {
 
 // Santé (publique)
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true, app: 'TAKATA', db: 'sqlite', time: new Date().toISOString() });
+  res.json({ ok: true, app: 'Takata Kwetu', db: 'sqlite', time: new Date().toISOString() });
 });
 
 // API
@@ -142,12 +142,12 @@ if (err && err.type === 'entity.too.large') {
   if (err && err.type === 'entity.parse.failed') {
     return res.status(400).json({ error: 'Requête invalide (JSON malformé).' });
   }
-  console.error('[TAKATA] Erreur :', err && err.message);
+  console.error('[Takata Kwetu] Erreur :', err && err.message);
   res.status(500).json({ error: 'Erreur interne du serveur.' });
 });
 
 const server = app.listen(PORT, () => {
-  console.log(`✅ TAKATA démarré : http://localhost:${PORT}`);
+  console.log(`✅ Takata Kwetu démarré : http://localhost:${PORT}`);
   console.log(`   Admin par défaut : admin / admin123  (voir seed.js)`);
 });
 
@@ -164,7 +164,7 @@ if (process.env.NODE_ENV === 'production') {
 try { require('./persist').start(db); } catch (e) { console.error('[persist] démarrage impossible : ' + (e && e.message)); }
 
 function shutdown() {
-  console.log('[TAKATA] Arrêt gracieux (checkpoint WAL puis fermeture)…');
+  console.log('[Takata Kwetu] Arrêt gracieux (checkpoint WAL puis fermeture)…');
   server.close(() => { db.closeDatabase(); process.exit(0); });
   // filet de sécurité : ne pas rester bloqué par une connexion ouverte
   setTimeout(() => { db.closeDatabase(); process.exit(0); }, 5000).unref();

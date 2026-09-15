@@ -1,4 +1,4 @@
-// scripts/generate-guide.js — Génère le guide d'utilisation TAKATA (DOCX)
+// scripts/generate-guide.js — Génère le guide d'utilisation Takata Kwetu (DOCX)
 // Usage : node scripts/generate-guide.js
 const path = require('path');
 const fs = require('fs');
@@ -40,10 +40,10 @@ const doc = new Document({
     properties: { page: { margin: { top: 1000, bottom: 1000, left: 1100, right: 1100 } } },
     children: [
       // Couverture
-      new Paragraph({ spacing: { before: 1200, after: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: '⚡ TAKATA', bold: true, size: 64, color: GREEN })] }),
+      new Paragraph({ spacing: { before: 1200, after: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: '⚡ Takata Kwetu', bold: true, size: 64, color: GREEN })] }),
       new Paragraph({ spacing: { after: 60 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Guide d’utilisation — Application agent de terrain', size: 30, color: TEXT })] }),
       new Paragraph({ spacing: { after: 60 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Version 1.0 — PWA installable (Android / iPhone)', size: 22, color: MUTED })] }),
-      new Paragraph({ spacing: { after: 300 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Thème vert TAKATA · #16A34A', size: 20, color: GREEN_DARK })] }),
+      new Paragraph({ spacing: { after: 300 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Thème vert Takata Kwetu · #16A34A', size: 20, color: GREEN_DARK })] }),
 
       h1('1. Démarrer l’application'),
       p('Le serveur se lance avec `npm start` après l’installation des dépendances (`npm install`) et l’initialisation des données (`npm run seed`). L’application est alors disponible à l’adresse http://localhost:3000 (ou le port choisi).'),
@@ -93,7 +93,7 @@ const doc = new Document({
       h1('6. Dépannage'),
       table(['Problème', 'Solution'], [
         ['Port 3000 déjà occupé', 'Lancer avec un autre port : $env:PORT="8080"; npm start (PowerShell)'],
-        ['Pas d’accès au serveur', 'Vérifier que le terminal affiche « TAKATA démarré » et que http://localhost:<port> répond'],
+        ['Pas d’accès au serveur', 'Vérifier que le terminal affiche « Takata Kwetu démarré » et que http://localhost:<port> répond'],
         ['Mot de passe oublié', 'L’administrateur peut le réinitialiser (Admin → Agents → Réinit. mot de passe)'],
         ['Installation PWA impossible', 'HTTPS requis hors localhost — déployer derrière un certificat SSL et réessayer'],
         ['Données hors-ligne non synchronisées', 'Se reconnecter puis Profil → « Synchroniser maintenant »'],

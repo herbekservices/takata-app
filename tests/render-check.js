@@ -37,7 +37,7 @@ try { await TAKATA.login(u, p); location.hash = '#/'; if (typeof renderRoute ===
   await page.goto(BASE + '/#/login', { waitUntil: 'networkidle0', timeout: 30000 });
   await new Promise((r) => setTimeout(r, 1500));
   await page.screenshot({ path: path.join(OUT, '01-login.png') });
-  const loginOk = await page.evaluate(() => !!document.querySelector('.auth-card') && document.body.innerText.includes('TAKATA'));
+  const loginOk = await page.evaluate(() => !!document.querySelector('.auth-card') && document.body.innerText.includes('Takata Kwetu'));
   console.log('Login page render:', loginOk ? 'OK' : 'FAIL');
 
   // 2. Connexion admin via le formulaire

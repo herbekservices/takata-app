@@ -1,4 +1,4 @@
-// Génère les icônes PWA TAKATA (SVG -> PNG) via sharp
+// Génère les icônes PWA Takata Kwetu (SVG -> PNG) via sharp
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
@@ -6,7 +6,7 @@ const path = require('path');
 const outDir = path.join(__dirname, '..', 'public', 'icons');
 fs.mkdirSync(outDir, { recursive: true });
 
-// Logo TAKATA : carré arrondi vert dégradé + éclair blanc (énergie)
+// Logo Takata Kwetu : carré arrondi vert dégradé + éclair blanc (énergie)
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">

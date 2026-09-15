@@ -51,8 +51,8 @@ if (newWd === wd) out.push('⚠️ watchdog : remplacements non appliqués');
 const ap = path.join(__dirname, '..', 'apk', 'package.json');
 let apj = fs.readFileSync(ap, 'utf8');
 apj = apj.replace(
-  '"description": "Client Android TAKATA (Capacitor) — se connecte au serveur TAKATA configuré dans www/config.js"',
-  '"description": "Client Android TAKATA (Capacitor) — pointe vers le serveur TAKATA configuré dans capacitor.config.json (server.url)"'
+  '"description": "Client Android Takata Kwetu (Capacitor) — se connecte au serveur Takata Kwetu configuré dans www/config.js"',
+  '"description": "Client Android Takata Kwetu (Capacitor) — pointe vers le serveur Takata Kwetu configuré dans capacitor.config.json (server.url)"'
 );
 fs.writeFileSync(ap, apj, 'utf8');
 out.push('apk/package.json : description corrigée');

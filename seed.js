@@ -1,4 +1,4 @@
-// seed.js — Initialisation de la base TAKATA
+// seed.js — Initialisation de la base Takata Kwetu
 // Usage :
 //   node seed.js --reset          → base PROPRE : comptes des 5 profils + formules, ZÉRO donnée de démo
 //   node seed.js --reset --demo   → base de DÉMONSTRATION (clients, abonnements, paiements, stock…)
@@ -136,10 +136,10 @@ techIds.forEach((id) => db.prepare('INSERT OR IGNORE INTO stock_items (product_i
 
     // Notifications
     const insNotif = db.prepare(`INSERT INTO notifications (user_id, title, body, read) VALUES (?,?,?,?)`);
-    insNotif.run(agentIds[0], 'Bienvenue sur TAKATA', 'Votre compte commercial est prêt. Bonnes collectes !', 0);
+    insNotif.run(agentIds[0], 'Bienvenue sur Takata Kwetu', 'Votre compte commercial est prêt. Bonnes collectes !', 0);
     insNotif.run(techIds[0], 'Tournée du jour', '2 abonnements Standard à collecter à Joli Site et Dilala.', 0);
     insNotif.run(admincommId, 'Équipe commerciale prête', '3 commerciaux et 6 abonnés enregistrés.', 0);
-    insNotif.run(admingenId, 'Compte direction créé', 'TAKATA Admin est prêt.', 0);
+    insNotif.run(admingenId, 'Compte direction créé', 'Takata Kwetu Admin est prêt.', 0);
 
     console.log('   Démo : 6 clients, 4 abonnements, 3 paiements, 4 commissions, stock doté.');
     return { demo: true, agentIds, techIds, custIds, abs: [abs1, abs2, abs3, abs4] };

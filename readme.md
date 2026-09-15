@@ -1,4 +1,4 @@
-# TAKATA — Application de terrain (collecte des déchets ménagers)
+# Takata Kwetu — Application de terrain (collecte des déchets ménagers)
 
 **Version 3.0** — Restyle « 11 Build » (luxe minimaliste) appliqué sur la structure existante · Produits adaptés au secteur de la collecte · Modèle de rôles complet.
 
@@ -14,7 +14,7 @@ npm run seed         # réinitialise la base avec les données de démonstration
 npm start            # démarre le serveur → http://localhost:8080
 ```
 
-- Santé : `GET /api/health` → `{"ok":true,"app":"TAKATA","db":"sqlite"}`
+- Santé : `GET /api/health` → `{"ok":true,"app":"Takata Kwetu","db":"sqlite"}`
 - Base : SQLite fichier `data/takata.db` (WAL). `npm run seed -- --reset` efface et re-seed.
 
 ## 2. Comptes de démonstration (par rôle)
@@ -39,7 +39,7 @@ npm start            # démarre le serveur → http://localhost:8080
 | Sacs poubelle (lot de 10) | 5 000 FC | Intrant géré en stock |
 | Désinfectant (bidon 1 L) | 15 000 FC | Intrant géré en stock |
 
-**Commissions TAKATA** : 20 % à la souscription (Standard 4 000 FC · Premium 7 000 FC · Séance **500 FC**), 5 % sur les renouvellements (1 000 FC sur une redevance Standard).
+**Commissions Takata Kwetu** : 20 % à la souscription (Standard 4 000 FC · Premium 7 000 FC · Séance **500 FC**), 5 % sur les renouvellements (1 000 FC sur une redevance Standard).
 
 ## 4. Navigation par rôle
 

@@ -1,4 +1,4 @@
-// edge-test.js — Tests fonctionnels adversariaux TAKATA (logique métier & validations)
+// edge-test.js — Tests fonctionnels adversariaux Takata Kwetu (logique métier & validations)
 // Usage : node tests/edge-test.js   (serveur attendu sur http://localhost:8080)
 // Données créées préfixées "edge_" pour nettoyage. Ne touche ni routes/ ni public/.
 const fs = require('fs');
@@ -57,7 +57,7 @@ async function login(username, password, xff) {
 
 (async () => {
   const started = Date.now();
-  console.log(`=== TAKATA edge tests @ ${BASE} — ${new Date().toISOString()} ===\n`);
+  console.log(`=== Takata Kwetu edge tests @ ${BASE} — ${new Date().toISOString()} ===\n`);
 
   // ---- Connexions de base ----
   const adminLogin = await login('admin', 'admin123');

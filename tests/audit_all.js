@@ -28,7 +28,7 @@ async function api(method, path, body, token) {
 }
 
 (async () => {
-  console.log('═══ AUDIT MATRICIEL TAKATA — base vide (zéro démo) ═══');
+  console.log('═══ AUDIT MATRICIEL Takata Kwetu — base vide (zéro démo) ═══');
   // 1. Connexions
   const tokens = {};
   for (const p of PROFILES) {

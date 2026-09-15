@@ -1,4 +1,4 @@
-# TAKATA — déploiement Fly.io (alternative à Render)
+# Takata Kwetu — déploiement Fly.io (alternative à Render)
 app = "takata-app"
 primary_region = "cdg"   # Paris (proche RDC/Europe) ; alternatives : jnb (Johannesburg)
 

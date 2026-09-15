@@ -1,6 +1,6 @@
 ﻿{
   "appId": "cd.takata.app",
-  "appName": "TAKATA",
+  "appName": "Takata Kwetu",
   "webDir": "www",
   "server": {
     "url": "https://takata-app.onrender.com",

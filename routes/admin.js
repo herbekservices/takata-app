@@ -200,7 +200,8 @@ router.post('/stock/set', (req, res) => {
   if (!product) return res.status(404).json({ error: 'Produit introuvable.' });
   if (agent_id !== null && agent_id !== undefined) {
     const member = db.prepare('SELECT * FROM users WHERE id = ?').get(agent_id);
-    if (!member || !scopedRoles(req.user).includes(member.role)) return res.status(400).json({ error: 'Destinataire inconnu ou hors de votre périmètre.' });
+    if (!member) return res.status(404).json({ error: 'Destinataire introuvable.' });
+    if (!scopedRoles(req.user).includes(member.role)) return res.status(403).json({ error: 'Destinataire hors de votre périmètre.' });
     if (!isSuper(req.user)) {
       if (req.user.role !== 'admintech' || member.role !== 'technicien') return res.status(403).json({ error: 'Le superviseur technique dote uniquement ses techniciens (le dépôt central est géré par la direction).' });
     }

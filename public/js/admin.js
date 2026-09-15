@@ -18,10 +18,10 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
         <a class="stat" href="#/admin/agents"><div class="num">${o.agents}</div><div class="lbl">Membres actifs</div></a>
         <a class="stat" href="#/customers"><div class="num">${o.customers}</div><div class="lbl">Abonnés</div></a>
         <a class="stat" href="#/prospects"><div class="num">${o.prospects}</div><div class="lbl">Prospects</div></a>
-        <a class="stat" href="#/installations"><div class="num">${o.installations}</div><div class="lbl">Abonnements</div></a>
+        <a class="stat" href="#/installations"><div class="num">${o.installations}</div><div class="lbl">Réabonnements</div></a>
         <a class="stat" href="#/admin/reports"><div class="num">${money(o.totalPaid)}</div><div class="lbl">Encaissements totaux</div></a>
-        <a class="stat" href="#/admin/commissions"><div class="num">${money(o.pendingCommissions)}</div><div class="lbl">Commissions à payer</div></a>
-        <a class="stat" href="#/installments?status=overdue"><div class="num">${o.overdue}</div><div class="lbl">Redevances en retard</div></a>
+        <a class="stat" href="#/admin/commissions"><div class="num">${money(o.pendingCommissions)}</div><div class="lbl">Commissions à valider</div></a>
+        <a class="stat" href="#/installments?status=overdue"><div class="num">${o.overdue}</div><div class="lbl">Réabonnements en retard</div></a>
         <a class="stat" href="#/admin/stock"><div class="num">${money(o.stockValue)}</div><div class="lbl">Valeur du stock</div></a>
       </div>
       <div class="section-title">Top du périmètre (encaissements)</div>

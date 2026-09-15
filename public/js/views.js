@@ -209,18 +209,18 @@
     const isTech = role === 'technicien';
     const grid = isTech ? `
       <div class="stats">
-        <a class="stat" href="#/installations"><div class="num">${s.installations}</div><div class="lbl">Abonnements en service</div></a>
+        <a class="stat" href="#/installations"><div class="num">${s.installations}</div><div class="lbl">Réabonnements en service</div></a>
         <a class="stat" href="#/installations"><div class="num">${s.planned}</div><div class="lbl">Tournées planifiées</div></a>
         <a class="stat" href="#/customers"><div class="num">${s.customers}</div><div class="lbl">Abonnés actifs</div></a>
-        <a class="stat" href="#/stock"><div class="num">${s.stockAlerts}</div><div class="lbl">Matériel en stock faible</div></a>
+        <a class="stat" href="#/stock"><div class="num">${s.stockAlerts}</div><div class="lbl">Intrants en stock faible</div></a>
       </div>` : `
       <div class="stats">
         <a class="stat" href="#/customers"><div class="num">${s.customers}</div><div class="lbl">Clients abonnés</div></a>
         <a class="stat" href="#/prospects"><div class="num">${s.prospects}</div><div class="lbl">Prospects</div></a>
-        <a class="stat" href="#/installations"><div class="num">${s.installations}</div><div class="lbl">Abonnements</div></a>
+        <a class="stat" href="#/installations"><div class="num">${s.installations}</div><div class="lbl">Réabonnements</div></a>
         <a class="stat" href="#/payments"><div class="num">${money(s.paidMonth)}</div><div class="lbl">Encaissé (mois)</div></a>
-        <a class="stat" href="#/installments?status=overdue"><div class="num" style="color:${s.overdue ? 'var(--red)' : 'var(--green-dark)'}">${s.overdue}</div><div class="lbl">Redevances en retard</div></a>
-        <a class="stat" href="#/installments?status=pending"><div class="num">${s.upcoming}</div><div class="lbl">Redevances ≤ 7 j</div></a>
+        <a class="stat" href="#/installments?status=overdue"><div class="num" style="color:${s.overdue ? 'var(--red)' : 'var(--green-dark)'}">${s.overdue}</div><div class="lbl">Réabonnements en retard</div></a>
+        <a class="stat" href="#/installments?status=pending"><div class="num">${s.upcoming}</div><div class="lbl">Réabonnements en retard ≥ 10 j</div></a>
         <a class="stat" href="#/stock"><div class="num">${s.stockAlerts}</div><div class="lbl">Intrants en stock faible</div></a>
         <a class="stat" href="#/commissions"><div class="num">${money(s.pendingCommissions)}</div><div class="lbl">Commissions à venir</div></a>
       </div>`;
@@ -234,7 +234,7 @@
         ${(d.recentPayments || []).map((p) => listItem(icon('wallet'), esc(p.customer), money(p.amount) + ' · ' + date(p.created_at), badge(p.method), '#/payments')).join('') || emptyState(icon('wallet'), 'Aucun encaissement enregistré')}
       </div>`}
 
-      <div class="section-title">Intrants / matériel en stock faible</div>
+      <div class="section-title">Intrants en stock faible</div>
       <div class="list">
         ${(d.lowStock || []).map((p) => listItem(icon('box'), esc(p.name), `${p.quantity} unité(s) restante(s)`, `<span class="badge ${p.quantity === 0 ? 'red' : 'amber'}">${p.quantity === 0 ? 'Rupture' : 'Bientôt épuisé'}</span>`, isAdmin ? '#/admin/stock' : '#/stock')).join('') || emptyState(icon('check'), 'Stocks suffisants')}
       </div>
@@ -252,7 +252,7 @@
     return `
       ${searchBar('Rechercher un client (nom, téléphone, quartier)', search, "location.hash='#/customers?search='+encodeURIComponent(this.value)")}
       <div class="list">
-        ${rows.map((c) => listItem(initials(c.name), esc(c.name), `<b>${phone(c.phone)}</b> · ${esc(c.village)}`, badge(c.status), `#/customers/${c.id}`)).join('') || emptyState(icon('users'), 'Aucun client trouvé')}
+        ${rows.map((c) => listItem(initials(c.name), esc(c.name), `<b>${phone(c.phone)}</b> · ${esc(c.village)}` + (canSeeOwner && c.agent ? ' · <i>' + esc(c.agent) + '</i>' : ''), badge(c.status), `#/customers/${c.id}`)).join('') || emptyState(icon('users'), 'Aucun client trouvé')}
       </div>
       ${isTech ? '' : fab("location.hash='#/customers/new'", 'Nouveau client')}
     `;
@@ -288,7 +288,7 @@
         <a class="btn small secondary" href="#/payments/new?customer=${c.id}">${icon('wallet')} Encaisser</a></div>`}
       </div>
 
-      <div class="section-title">Abonnements (${c.installations.length})</div>
+      <div class="section-title">Réabonnements (${c.installations.length})</div>
       <div class="list">
         ${c.installations.map((i) => listItem(icon('recycle'), esc(i.product), `Depuis le ${date(i.install_date)} · ${money(i.price)}`, badge(i.status), `#/installations/${i.id}`)).join('') || emptyState(icon('recycle'), 'Aucun abonnement')}
         ${isTech ? '' : `<a class="btn small secondary" style="margin:4px auto;display:flex;width:auto" href="#/installations/new?customer=${c.id}">+ Souscrire un abonnement</a>`}
@@ -493,7 +493,7 @@ toast('Abonnement souscrit');
         <hr class="divider">
         <div class="kv"><span>Début du contrat</span><b>${date(i.install_date)}</b></div>
         <div class="kv"><span>Référence</span><b>${esc(i.serial || '—')}</b></div>
-        <div class="kv"><span>Redevance (mensuelle)</span><b>${money(i.price)}</b></div>
+        <div class="kv"><span>Réabonnement (mensuel)</span><b>${money(i.price)}</b></div>
         <div class="kv"><span>Avancement paiements</span><b>${pct}% (${money(paidAmt)} / ${money(totalInstall || i.price)})</b></div>
         ${totalInstall ? `<progress max="100" value="${pct}"></progress>` : ''}
       </div>
@@ -614,7 +614,7 @@ toast('Abonnement souscrit');
         <div class="stat"><div class="num">${money(d.totals.total)}</div><div class="lbl">Total</div></div>
       </div>
       <div class="list">
-        ${d.rows.map((c) => listItem(icon('award'), money(c.amount), date(c.created_at) + ' · ' + esc(c.agent), badge(c.status), '#/commissions')).join('') || emptyState(icon('award'), 'Aucune commission')}
+        ${d.rows.map((c) => listItem(icon('award'), money(c.amount), date(c.created_at) + ' · ' + esc(c.agent), (c.status === 'paid' ? '<span class=\'badge green\'>Validée</span>' : '<span class=\'badge red\'>À valider</span>'), '#/commissions')).join('') || emptyState(icon('award'), 'Aucune commission')}
       </div>
     `;
   }

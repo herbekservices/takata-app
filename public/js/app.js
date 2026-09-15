@@ -127,6 +127,8 @@ const V = TAKATA_VIEWS;
     const roleLabel = ROLE_LABELS[user.role] || user.role;
     return `
       <div class="topbar">
+    <button class="nav-arrow" id="nav-back" aria-label="Retour" onclick="history.back()">‹</button>
+    <button class="nav-arrow" id="nav-forward" aria-label="Avancer" onclick="history.forward()">›</button>
         <div class="logo" aria-hidden="true">${icon('leaf', 22)}</div>
         <div><h1>TAKATA</h1><div class="sub">${esc(title)} · ${esc(user.full_name.split(' ')[0])} <span style="opacity:.75">(${roleLabel})</span></div></div>
         <div class="row" style="gap:6px;flex:none">

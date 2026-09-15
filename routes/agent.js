@@ -291,7 +291,9 @@ router.post('/installations', guardCommercial, (req, res) => {
     SELECT * FROM stock_items WHERE product_id = ?
     AND ((agent_id = ?) OR (agent_id IS NULL)) ORDER BY (agent_id = ?) DESC`
   ).all(product_id, req.user.id, req.user.id).find((r) => r.quantity > 0);
-  if (!available) return res.status(409).json({ error: 'Stock insuffisant pour cette installation. Demandez un réapprovisionnement.' });
+  // Prestation de service : l'enregistrement d'un client reste possible meme sans stock
+  // (le stock est consomme s'il existe, sinon aucune erreur n'est bloquee)
+  if (!available) { /* pas de blocage : service, pas de vente de materiel */ }
 
   const tx = db.transaction(() => {
     const info = db.prepare(`INSERT INTO installations (customer_id, agent_id, product_id, serial, install_date, status, notes)

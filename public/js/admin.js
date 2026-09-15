@@ -300,7 +300,7 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
       <div class="section-title">Saisie manuelle : quantités possédées</div>
       <div class="list">
         ${stock.map((s) => `<div class="card" style="margin:6px 14px">
-          <div class="row"><div style="flex:1"><b>${esc(s.name)}</b><div class="muted">${esc(s.agent)} · ${esc(s.category || '')}</div></div>
+          <div class="row"><div style="flex:1"><b>${esc(s.name)}</b><div class="muted">${esc(s.agent)}</div></div>
           <span class="badge ${s.quantity <= 3 ? (s.quantity === 0 ? 'red' : 'amber') : 'green'}">${s.quantity}</span></div>
           <div class="stock-line" style="margin-top:10px">
 <input id="sq-${s.id}" class="num" type="number" min="0" step="1" value="${s.quantity}" data-prev="${s.quantity}" inputmode="numeric" aria-label="Quantité possédée de ${esc(s.name)}">

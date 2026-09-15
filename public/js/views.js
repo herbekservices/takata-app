@@ -212,7 +212,7 @@
         <a class="stat" href="#/installations"><div class="num">${s.installations}</div><div class="lbl">Réabonnements en service</div></a>
         <a class="stat" href="#/installations"><div class="num">${s.planned}</div><div class="lbl">Tournées planifiées</div></a>
         <a class="stat" href="#/customers"><div class="num">${s.customers}</div><div class="lbl">Abonnés actifs</div></a>
-        <a class="stat" href="#/stock"><div class="num">${s.stockAlerts}</div><div class="lbl">Intrants en stock faible</div></a>
+        <a class="stat" href="#/stock"><div class="num">${s.stockAlerts}</div><div class="lbl">Matériel en stock faible</div></a>
       </div>` : `
       <div class="stats">
         <a class="stat" href="#/customers"><div class="num">${s.customers}</div><div class="lbl">Clients abonnés</div></a>
@@ -221,7 +221,7 @@
         <a class="stat" href="#/payments"><div class="num">${money(s.paidMonth)}</div><div class="lbl">Encaissé (mois)</div></a>
         <a class="stat" href="#/installments?status=overdue"><div class="num" style="color:${s.overdue ? 'var(--red)' : 'var(--green-dark)'}">${s.overdue}</div><div class="lbl">Réabonnements en retard</div></a>
         <a class="stat" href="#/installments?status=overdue10"><div class="num" style="color:${s.overdue10 ? 'var(--red)' : 'var(--green-dark)'}">${s.overdue10}</div><div class="lbl">Réabonnements en retard ≥ 10 j</div></a>
-        <a class="stat" href="#/stock"><div class="num">${s.stockAlerts}</div><div class="lbl">Intrants en stock faible</div></a>
+        <a class="stat" href="#/stock"><div class="num">${s.stockAlerts}</div><div class="lbl">Matériel en stock faible</div></a>
         <a class="stat" href="#/commissions"><div class="num">${money(s.pendingCommissions)}</div><div class="lbl">Commissions à venir</div></a>
       </div>`;
     return `
@@ -234,7 +234,7 @@
         ${(d.recentPayments || []).map((p) => listItem(icon('wallet'), esc(p.customer), money(p.amount) + ' · ' + date(p.created_at), badge(p.method), '#/payments')).join('') || emptyState(icon('wallet'), 'Aucun encaissement enregistré')}
       </div>`}
 
-      <div class="section-title">Intrants en stock faible</div>
+      <div class="section-title">Matériel en stock faible</div>
       <div class="list">
         ${(d.lowStock || []).map((p) => listItem(icon('box'), esc(p.name), `${p.quantity} unité(s) restante(s)`, `<span class="badge ${p.quantity === 0 ? 'red' : 'amber'}">${p.quantity === 0 ? 'Rupture' : 'Bientôt épuisé'}</span>`, isAdmin ? '#/admin/stock' : '#/stock')).join('') || emptyState(icon('check'), 'Stocks suffisants')}
       </div>
@@ -640,7 +640,7 @@ toast('Réabonnement souscrit');
     const isAdmin = TAKATA.store.user && TAKATA.store.user.role === 'admin';
     return `
       <div class="list">
-        ${rows.map((s) => listItem(icon('box'), esc(s.name), money(s.price) + ' · ' + esc(s.category || ''), `<span class="badge ${s.quantity <= 3 ? (s.quantity === 0 ? 'red' : 'amber') : 'green'}">${s.quantity} unité(s)</span>`, isAdmin ? '#/admin/stock' : '#/stock')).join('') || emptyState(icon('box'), 'Aucun stock')}
+        ${rows.map((s) => listItem(icon('box'), esc(s.name), money(s.price), `<span class="badge ${s.quantity <= 3 ? (s.quantity === 0 ? 'red' : 'amber') : 'green'}">${s.quantity} unité(s)</span>`, isAdmin ? '#/admin/stock' : '#/stock')).join('') || emptyState(icon('box'), 'Aucun stock')}
       </div>
       ${isAdmin ? `<div class="card"><p class="muted">Gérez le stock (entrées, sorties, répartition) depuis l'espace admin.</p></div>` : ''}
     `;

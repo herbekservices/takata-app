@@ -39,8 +39,14 @@ router.get('/dashboard', (req, res) => {
     const liveInstallations = db.prepare(`SELECT COUNT(*) c FROM installations WHERE status='installé'`).get().c;
     const planned = db.prepare(`SELECT COUNT(*) c FROM installations WHERE status='planifiée'`).get().c;
     const activeCustomers = db.prepare(`SELECT COUNT(*) c FROM customers WHERE status='installé'`).get().c;
-    const stock = db.prepare(`SELECT si.product_id, si.quantity, p.name, p.category FROM stock_items si JOIN products p ON p.id=si.product_id WHERE si.quantity <= 10 AND p.category = 'Intrant' ORDER BY si.quantity ASC LIMIT 5`).all();
-    const stockAlerts = db.prepare(`SELECT COUNT(*) c FROM stock_items si JOIN products p ON p.id=si.product_id WHERE si.quantity <= 10 AND p.category = 'Intrant'`).get().c;
+    // Disponibilité réelle des intrants (dotation technicien + dépôt central) : un intrant
+    // absent (aucune ligne de stock) compte comme rupture, contrairement à l'ancienne requête
+    // qui n'interrogeait que les lignes existantes.
+    // Disponibilité réelle pour CE technicien : sa dotation + le dépôt central.
+    // Un intrant que le technicien ne peut pas obtenir compte comme rupture.
+    const AVAIL = `COALESCE((SELECT SUM(si.quantity) FROM stock_items si WHERE si.product_id = p.id AND (si.agent_id = ? OR si.agent_id IS NULL)), 0)`;
+    const stock = db.prepare(`SELECT p.id AS product_id, ${AVAIL} AS quantity, p.name, p.category FROM products p WHERE p.category = 'Intrant' AND ${AVAIL} <= 10 ORDER BY quantity ASC LIMIT 5`).all(uid, uid);
+    const stockAlerts = db.prepare(`SELECT COUNT(*) c FROM products p WHERE p.category = 'Intrant' AND ${AVAIL} <= 10`).get(uid).c;
     return res.json({
       stats: { customers: activeCustomers, prospects: 0, installations: liveInstallations, planned,
                paidMonth: 0, totalPaid: 0, overdue: 0, upcoming: 0, stockAlerts, pendingCommissions: 0, liveInstallations },
@@ -231,7 +237,11 @@ router.post('/prospects/:id/convert', guardCommercial, (req, res) => {
 
 // ---- Produits & stocks (agent : lecture) ----
 router.get('/products', (req, res) => {
-  const rows = db.prepare('SELECT * FROM products WHERE active = 1 ORDER BY name').all();
+  // Les coûts et taux de commission sont des données commerciales sensibles :
+  // seuls les profils commerciaux (et la direction) y ont accès.
+  const commercial = isCommercial(req.user) || isCommercialScope(req.user) || isAdmin(req.user);
+  const cols = commercial ? '*' : 'id, name, category, price, payg, nb_installments, active';
+  const rows = db.prepare(`SELECT ${cols} FROM products WHERE active = 1 ORDER BY name`).all();
   res.json(rows);
 });
 
@@ -242,8 +252,8 @@ router.get('/stock', (req, res) => {
   if (isTechnician(req.user)) {
     const rows = db.prepare(`
       SELECT p.id AS product_id, p.name, p.category,
-        CASE WHEN COALESCE((SELECT SUM(quantity) FROM stock_items si WHERE si.product_id = p.id), 0) > 0 THEN 1 ELSE 0 END AS disponible
-      FROM products p WHERE p.category = 'Intrant' ORDER BY p.name`).all();
+        CASE WHEN COALESCE((SELECT SUM(si.quantity) FROM stock_items si WHERE si.product_id = p.id AND (si.agent_id = ? OR si.agent_id IS NULL)), 0) > 0 THEN 1 ELSE 0 END AS disponible
+      FROM products p WHERE p.category = 'Intrant' ORDER BY p.name`).all(req.user.id, req.user.id);
     return res.json(rows);
   }
   const rows = isAdmin(req.user)
@@ -462,6 +472,7 @@ router.post('/payments', guardCommercial, (req, res) => {
 
 // ---- Échéances & relances ----
 router.get('/installments', (req, res) => {
+  if (isTechScope(req.user)) return res.status(403).json({ error: 'Module réservé aux équipes commerciales.' });
   const uid = req.user.id;
   const { status = '' } = req.query;
 const cond = [isCommercialScope(req.user) ? '1=1' : 'i.agent_id = ?'];

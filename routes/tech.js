@@ -183,6 +183,7 @@ router.get('/tournees', (req, res) => {
 });
 
 router.post('/tournees/:id/valider', (req, res) => {
+  if (!isTechnician(req.user)) return res.status(403).json({ error: 'Réservé aux techniciens.' });
   const tour = db.prepare('SELECT * FROM tournees WHERE id = ?').get(Number(req.params.id));
   if (!tour) return res.status(404).json({ error: 'Tournée introuvable.' });
   if (tour.technicien_id !== req.user.id) return res.status(403).json({ error: 'Vous ne pouvez valider que vos propres tournées.' });
@@ -196,9 +197,19 @@ router.post('/tournees/:id/valider', (req, res) => {
 // ============ DEMANDES DE MATÉRIEL : le technicien signale, le superviseur traite ============
 router.post('/demandes', (req, res) => {
   if (!isTechnician(req.user)) return res.status(403).json({ error: 'Réservé aux techniciens.' });
-  const { product_id, quantite = 1, motif = '' } = req.body || {};
-  const product = db.prepare("SELECT id FROM products WHERE id = ? AND category = 'Intrant'").get(Number(product_id));
-  if (!product) return res.status(404).json({ error: 'Intrant introuvable.' });
+  const { product_id, intrant, produit, quantite = 1, motif = '' } = req.body || {};
+  // L'intrant peut être désigné par son identifiant OU par son nom (saisie terrain).
+  let product = null;
+  if (product_id !== undefined && product_id !== null && product_id !== '') {
+    product = db.prepare("SELECT id FROM products WHERE id = ? AND category = 'Intrant'").get(Number(product_id));
+  } else {
+    const name = String(intrant || produit || '').trim();
+    if (name) {
+      product = db.prepare("SELECT id FROM products WHERE category = 'Intrant' AND name = ? COLLATE NOCASE").get(name)
+        || db.prepare("SELECT id FROM products WHERE category = 'Intrant' AND name LIKE ? ORDER BY length(name) LIMIT 1").get('%' + name + '%');
+    }
+  }
+  if (!product) return res.status(404).json({ error: "Intrant introuvable. Indiquez un product_id ou un nom d'intrant valide." });
   const q = Number(quantite);
   if (!Number.isFinite(q) || q <= 0) return res.status(400).json({ error: 'Quantité invalide.' });
   const id = db.prepare(`INSERT INTO tech_demandes (user_id, product_id, quantite, motif) VALUES (?,?,?,?)`)

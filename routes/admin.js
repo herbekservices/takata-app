@@ -293,7 +293,7 @@ router.post('/maintenance/purge-tests', (req, res) => {
     out.customers = cust.length;
     if (cust.length) {
       const ph = cust.map(() => '?').join(',');
-      out.commissions = db.prepare(`DELETE FROM commissions WHERE agent_id IN (SELECT agent_id FROM customers WHERE id IN (${ph}))`).run(...cust).changes;
+      out.commissions = db.prepare(`DELETE FROM commissions WHERE installation_id IN (SELECT id FROM installations WHERE customer_id IN (${ph})) OR payment_id IN (SELECT id FROM payments WHERE customer_id IN (${ph}))`).run(...cust, ...cust).changes;
       out.payments = db.prepare(`DELETE FROM payments WHERE customer_id IN (${ph})`).run(...cust).changes;
       out.installments = db.prepare(`DELETE FROM installments WHERE customer_id IN (${ph})`).run(...cust).changes;
       out.installations = db.prepare(`DELETE FROM installations WHERE customer_id IN (${ph})`).run(...cust).changes;

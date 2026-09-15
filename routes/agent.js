@@ -24,6 +24,7 @@ const PROSPECT_STATUS = ['nouveau', 'contacté', 'converti', 'perdu'];
 const INSTALLATION_STATUS = ['planifiée', 'installé'];
 const PAYMENT_METHODS = ['cash', 'mobile_money', 'bank', 'card'];
 const MAX_PAYMENT = 100000000; // 100 M F : garde-fou contre les montants aberrants
+const RENEWAL_RATE = 5; // commission sur RÉABONNEMENT (renouvellement) ; abonnement = taux du produit (20 %)
 const str = (v, max = 500) => String(v ?? '').slice(0, max);
 const isDateStr = (s) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s));
 // Garde d'appartenance : l'agent ne manipule que ses clients ; l'admin tout
@@ -337,8 +338,11 @@ router.post('/installations', guardCommercial, (req, res) => {
       });
     }
 
-    // Commission (installation)
-    const comm = Math.round(product.price * (product.commission_rate / 100) * 100) / 100;
+    // Commission (souscription) : ABONNEMENT = 1re souscription du client -> 20 % ;
+    // RÉABONNEMENT = renouvellement -> 5 %.
+    const isFirst = db.prepare('SELECT MIN(id) AS m FROM installations WHERE customer_id = ?').get(customer_id).m === info.lastInsertRowid;
+    const rate = isFirst ? product.commission_rate : RENEWAL_RATE;
+    const comm = Math.round(product.price * (rate / 100) * 100) / 100;
     if (comm > 0) {
       db.prepare(`INSERT INTO commissions (agent_id, installation_id, amount) VALUES (?,?,?)`)
         .run(req.user.id, info.lastInsertRowid, comm);
@@ -451,12 +455,18 @@ router.post('/payments', guardCommercial, (req, res) => {
       }
     }
 
-    // Commission sur paiement : renouvellement d'abonnement = 5 % ; séance à la carte = 20 %
-    // (500 FC / 2 500 FC) ; paiement libre sans contrat = 5 % par défaut.
-    const productRow = installation_id
-      ? db.prepare(`SELECT p.* FROM installations i JOIN products p ON p.id = i.product_id WHERE i.id = ?`).get(installation_id)
-      : db.prepare(`SELECT p.* FROM installations i JOIN products p ON p.id = i.product_id WHERE i.customer_id = ? ORDER BY i.id DESC LIMIT 1`).get(customer.id);
-    const rate = productRow ? (productRow.payg ? 5 : productRow.commission_rate) : 5;
+    // Commission sur paiement : ABONNEMENT (1re souscription) = 20 % ; RÉABONNEMENT = 5 %.
+    // On rattache le paiement à son installation (via l'échéance, l'installation, ou la dernière du client).
+    let instRow = null;
+    if (installation_id) instRow = db.prepare('SELECT * FROM installations WHERE id = ?').get(installation_id);
+    else if (installment && installment.installation_id) instRow = db.prepare('SELECT * FROM installations WHERE id = ?').get(installment.installation_id);
+    else instRow = db.prepare('SELECT * FROM installations WHERE customer_id = ? ORDER BY id DESC LIMIT 1').get(customer.id);
+    let rate = RENEWAL_RATE;
+    if (instRow) {
+      const firstSub = db.prepare('SELECT MIN(id) AS m FROM installations WHERE customer_id = ?').get(customer.id).m === instRow.id;
+      const pr = db.prepare('SELECT * FROM products WHERE id = ?').get(instRow.product_id);
+      rate = firstSub ? (pr ? pr.commission_rate : 20) : RENEWAL_RATE;
+    }
     const comm = Math.round(finalAmount * (rate / 100) * 100) / 100;
     if (comm > 0) {
       db.prepare(`INSERT INTO commissions (agent_id, payment_id, amount) VALUES (?,?,?)`)

@@ -461,11 +461,13 @@ router.post('/payments', guardCommercial, (req, res) => {
     if (installation_id) instRow = db.prepare('SELECT * FROM installations WHERE id = ?').get(installation_id);
     else if (installment && installment.installation_id) instRow = db.prepare('SELECT * FROM installations WHERE id = ?').get(installment.installation_id);
     else instRow = db.prepare('SELECT * FROM installations WHERE customer_id = ? ORDER BY id DESC LIMIT 1').get(customer.id);
+    // ABONNEMENT = tout premier contrat OU premier paiement du client (20 %) ;
+    // RÉABONNEMENT = tout ce qui suit (5 %).
+    const prior = db.prepare('SELECT (SELECT COUNT(*) FROM installations WHERE customer_id = ?) + (SELECT COUNT(*) FROM payments WHERE customer_id = ? AND id <> ?) AS c').get(customer.id, customer.id, info.lastInsertRowid).c;
     let rate = RENEWAL_RATE;
-    if (instRow) {
-      const firstSub = db.prepare('SELECT MIN(id) AS m FROM installations WHERE customer_id = ?').get(customer.id).m === instRow.id;
-      const pr = db.prepare('SELECT * FROM products WHERE id = ?').get(instRow.product_id);
-      rate = firstSub ? (pr ? pr.commission_rate : 20) : RENEWAL_RATE;
+    if (prior === 0) {
+      const pr = instRow ? db.prepare('SELECT * FROM products WHERE id = ?').get(instRow.product_id) : null;
+      rate = pr ? pr.commission_rate : 20;
     }
     const comm = Math.round(finalAmount * (rate / 100) * 100) / 100;
     if (comm > 0) {

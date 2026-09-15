@@ -318,4 +318,37 @@ router.post('/maintenance/purge-tests', (req, res) => {
   res.json({ ok: true, purged: out });
 });
 
+// ---- Maintenance : recalcul des commissions en attente (ABONNEMENT 20% / REABONNEMENT 5%) ----
+router.post('/maintenance/recompute-commissions', (req, res) => {
+  if (!isSuper(req.user)) return res.status(403).json({ error: 'Reserve a la direction.' });
+  if (!req.body || req.body.confirm !== 'RECOMPUTE') {
+    return res.status(400).json({ error: 'Confirmation requise : envoyer { "confirm": "RECOMPUTE" }.' });
+  }
+  const AB = 20, REN = 5;
+  const rows = db.prepare("SELECT * FROM commissions WHERE status = 'pending'").all();
+  let updated = 0;
+  const tx = db.transaction(() => {
+    for (const c of rows) {
+      let rate = REN, base = 0;
+      if (c.installation_id) {
+        const inst = db.prepare('SELECT i.*, p.price, p.commission_rate FROM installations i JOIN products p ON p.id = i.product_id WHERE i.id = ?').get(c.installation_id);
+        if (!inst) continue;
+        const first = db.prepare('SELECT MIN(id) AS m FROM installations WHERE customer_id = ?').get(inst.customer_id);
+        rate = (first && first.m === inst.id) ? inst.commission_rate : REN;
+        base = inst.price;
+      } else if (c.payment_id) {
+        const pay = db.prepare('SELECT * FROM payments WHERE id = ?').get(c.payment_id);
+        if (!pay) continue;
+        const prior = db.prepare('SELECT (SELECT COUNT(*) FROM installations WHERE customer_id = ?) + (SELECT COUNT(*) FROM payments WHERE customer_id = ? AND id <> ?) AS x').get(pay.customer_id, pay.customer_id, pay.id).x;
+        rate = prior === 0 ? AB : REN;
+        base = pay.amount;
+      } else continue;
+      const amount = Math.round(base * rate / 100 * 100) / 100;
+      if (amount !== c.amount) { db.prepare('UPDATE commissions SET amount = ? WHERE id = ?').run(amount, c.id); updated++; }
+    }
+  });
+  tx();
+  res.json({ ok: true, scanned: rows.length, updated });
+});
+
 module.exports = router;

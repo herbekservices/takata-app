@@ -43,6 +43,7 @@ const V = TAKATA_VIEWS;
     [/^\/admin\/stock$/, (p, q) => A.adminStockView(), 'Stock', true, 'admin', null],
     [/^\/admin\/commissions$/, (p, q) => A.adminCommissionsView(), 'Commissions', true, 'admin', null],
     [/^\/admin\/reports$/, (p, q) => A.reportsView(), 'Rapports', true, 'admin', null],
+    [/^\/admin\/audit$/, (p, q) => A.auditView(q), 'Journal d audit', true, 'admin', null],
   ];
 
   function parseHash() {

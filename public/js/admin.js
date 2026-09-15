@@ -420,8 +420,29 @@ ${(agents || []).filter((x) => x.active).map((a) => `<option value="${a.id}">${e
   }
 
   // ============ REGISTRE ============
+
+  // ============ JOURNAL D AUDIT (direction) ============
+  async function auditView(q) {
+    const search = (q && q.q) || '';
+    let rows = [];
+    try { rows = await TAKATA.audit(300, search); } catch (e) { return emptyState('x', 'Acces refuse', (e && e.message) || 'Reserve a la direction'); }
+    const body = rows.map((r) => '<tr>' +
+      '<td class="muted" style="white-space:nowrap">' + esc(String(r.at).slice(0, 16)) + '</td>' +
+      '<td>' + esc(r.username || '\u2014') + '</td>' +
+      '<td>' + esc(r.role || '\u2014') + '</td>' +
+      '<td>' + esc(r.action || '') + '</td>' +
+      '<td class="muted">' + esc(r.details || '') + '</td>' +
+      '<td class="muted" style="font-size:11px">' + esc(r.ip || '') + '</td></tr>').join('');
+    const table = rows.length
+      ? '<div style="overflow-x:auto"><table class="table"><thead><tr><th>Date</th><th>Utilisateur</th><th>Role</th><th>Action</th><th>Details</th><th>IP</th></tr></thead><tbody>' + body + '</tbody></table></div>'
+      : emptyState('inbox', 'Aucune entree', 'Les actions sensibles apparaitront ici.');
+    return '<div class="card"><div class="row"><div style="flex:1"><div style="font-weight:600">Journal d audit</div>'+
+      '<div class="muted">' + rows.length + ' derniere(s) action(s) : connexions, creations, modifications, suppressions, exports.</div></div></div>'+
+      '<div class="row" style="margin:10px 0;gap:8px"><input id="audit-q" placeholder="Rechercher (utilisateur, action...)" value="' + esc(search) + '" style="flex:1">'+
+      '<button class="btn small" onclick="location.hash=\'#/admin/audit?q=\'+encodeURIComponent(document.getElementById(\'audit-q\').value)">Filtrer</button></div>' + table + '</div>';
+  }
   window.TAKATA_ADMIN = {
-adminHomeView, agentsView, agentFormView, createAgent, saveAgent, agentEditView, deleteAgent, toggleAgent, resetPassword, setStock, downloadExport,
+auditView, adminHomeView, agentsView, agentFormView, createAgent, saveAgent, agentEditView, deleteAgent, toggleAgent, resetPassword, setStock, downloadExport,
     productsView, productFormView, saveProduct, toggleProduct, editProduct,
     adminStockView, doMove, adminCommissionsView, payCommissions, reportsView
   };

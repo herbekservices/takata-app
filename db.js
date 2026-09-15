@@ -311,5 +311,12 @@ function closeDatabase() {
   } catch (e) { console.error('[boot] seed initial impossible : ' + e.message); }
 })();
 
+
+// --- Journal d audit (idempotent) ---
+db.exec("CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT NOT NULL DEFAULT (datetime('now','localtime')), user_id INTEGER, username TEXT, role TEXT, action TEXT NOT NULL, entity TEXT DEFAULT '', entity_id TEXT DEFAULT '', details TEXT DEFAULT '', ip TEXT DEFAULT ''); CREATE INDEX IF NOT EXISTS idx_audit_at ON audit_log(at);");
+// --- Double authentification TOTP (colonnes additives, sans casser l existant) ---
+const _userCols = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
+if (!_userCols.includes('totp_secret')) db.exec('ALTER TABLE users ADD COLUMN totp_secret TEXT');
+if (!_userCols.includes('totp_enabled')) db.exec('ALTER TABLE users ADD COLUMN totp_enabled INTEGER NOT NULL DEFAULT 0');
 module.exports = db;
 module.exports.closeDatabase = closeDatabase;

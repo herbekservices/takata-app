@@ -250,4 +250,16 @@ router.get('/overview', (req, res) => {
   res.json({ customers, prospects, installations, agents, totalPaid, pendingCommissions, stockValue, overdue, topAgents });
 });
 
+
+// GET /api/admin/audit — journal d audit (direction uniquement)
+router.get('/audit', requireAuth, (req, res) => {
+  if (!isSuper(req.user)) return res.status(403).json({ error: 'Reserve a la direction.' });
+  const limit = Math.min(Number(req.query.limit) || 200, 500);
+  const q = String(req.query.q || '').trim();
+  const rows = q
+    ? db.prepare('SELECT * FROM audit_log WHERE username LIKE ? OR action LIKE ? OR entity LIKE ? OR details LIKE ? ORDER BY id DESC LIMIT ?').all('%' + q + '%', '%' + q + '%', '%' + q + '%', '%' + q + '%', limit)
+    : db.prepare('SELECT * FROM audit_log ORDER BY id DESC LIMIT ?').all(limit);
+  res.json(rows);
+});
+
 module.exports = router;

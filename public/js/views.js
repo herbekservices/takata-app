@@ -112,6 +112,11 @@
           <input id="login-username" name="username" autocomplete="username" placeholder="ex. agent1" required>
           <div class="field-error" id="err-user"></div>
         </div>
+          <div class="field" id="field-code" style="display:none">
+            <label for="login-code">Code de vérification (double authentification)</label>
+            <input id="login-code" name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="6 chiffres" maxlength="6">
+            <div class="field-error" id="err-code"></div>
+          </div>
           <div class="field" id="field-pass">
           <label for="login-password">Mot de passe</label>
           <div class="pass-wrap">
@@ -158,16 +163,27 @@
     const f = new FormData(e.target);
     const username = f.get('username');
     const password = f.get('password');
+    const code = (f.get('code') || '').trim();
     const btn = e.target.querySelector('.btn');
     btn.disabled = true; btn.textContent = 'Connexion…';
     try {
-      await TAKATA.login(username, password);
+      await TAKATA.login(username, password, code);
       toast('Bienvenue');
       location.hash = '#/';
       if (typeof renderRoute === 'function') renderRoute();
     } catch (err) {
       btn.disabled = false; btn.textContent = 'Se connecter';
       const cross = icon('x', 14);
+      if (err.status === 401 && err.data && err.data.twofa) {
+        const box = document.getElementById('field-code');
+        if (box) box.style.display = '';
+        const inp = document.getElementById('login-code');
+        if (inp) inp.focus();
+        const ec = document.getElementById('err-code');
+        if (ec) ec.innerHTML = 'Saisissez le code à 6 chiffres de votre application d authentification.';
+        toast('Double authentification requise');
+        return;
+      }
       if (err.status === 401) {
         document.getElementById('field-user').classList.add('has-error');
         document.getElementById('field-pass').classList.add('has-error');
@@ -249,6 +265,15 @@
     const totalPaid = (c.payments || []).reduce((a, p) => a + p.amount, 0);
     const nextDue = (c.installments || []).find((i) => i.status === 'pending');
     return `
+      <div class="card secu-card">
+        <div class="row"><div style="flex:1"><div style="font-weight:600">Sécurité · Double authentification</div>
+        <div class="muted">Protège votre compte avec un code temporaire (application d authentification).</div></div></div>
+        <div id="2fa-box"><p class="muted">Statut : </p></div>
+        <div class="row" style="gap:8px;margin-top:8px">
+          <button class="btn" onclick="TAKATA_VIEWS.start2fa()">Activer / changer la clé</button>
+          <button class="btn secondary" onclick="TAKATA_VIEWS.disable2fa()">Désactiver</button>
+        </div>
+      </div>
       <div class="card">
         <div class="row"><div class="avatar" style="width:52px;height:52px;font-size:20px">${initials(c.name)}</div>
         <div style="flex:1"><div style="font-weight:600;font-size:16px">${esc(c.name)}</div><div class="muted">${phone(c.phone)}</div></div>
@@ -627,6 +652,32 @@ toast('Abonnement souscrit');
     renderRoute();
   }
 
+  // --- Double authentification (Profil) ---
+  async function start2fa() {
+    try {
+      const r = await TAKATA.twofaSetup();
+      const box = document.getElementById('2fa-box');
+      if (box) box.innerHTML = '<p class="muted">1. Ouvrez votre application d authentification (Google Authenticator, Authy…).' +
+        '<br>2. Ajoutez un compte avec cette clé : <b style="user-select:all">' + esc(r.secret) + '</b>' +
+        '<br>3. Saisissez ensuite le code à 6 chiffres généré :</p>' +
+        '<div class="row"><input id="2fa-code" inputmode="numeric" maxlength="6" placeholder="000000" style="flex:1">' +
+        '<button class="btn" onclick="TAKATA_VIEWS.enable2fa()">Activer</button></div>' +
+        '<p class="muted" style="font-size:11px;margin-top:6px">Clé (au cas où) : ' + esc(r.secret) + '</p>';
+      toast('Clé générée — ajoutez-la à votre application');
+    } catch (e) { toast(e.message || 'Erreur'); }
+  }
+  async function enable2fa() {
+    const inp = document.getElementById('2fa-code');
+    try { await TAKATA.twofaEnable((inp && inp.value || '').trim()); toast('Double authentification activée'); renderRoute(); }
+    catch (e) { toast(e.message || 'Code incorrect'); }
+  }
+  async function disable2fa() {
+    const p = prompt('Confirmez votre mot de passe pour désactiver la double authentification :');
+    if (!p) return;
+    try { await TAKATA.twofaDisable(p); toast('Double authentification désactivée'); renderRoute(); }
+    catch (e) { toast(e.message || 'Mot de passe incorrect'); }
+  }
+
   // ============ PROFIL ============
   async function profileView() {
     const u = TAKATA.store.user;
@@ -953,7 +1004,7 @@ toast('Abonnement souscrit');
     paymentsView, paymentFormView, savePayment, pickInstallment,
     installmentsView, remindInstallment,
     commissionsView, stockView, notificationsView, readAll,
-    profileView, syncNow, changePassword, doLogout,
+    profileView, start2fa, enable2fa, disable2fa, syncNow, changePassword, doLogout,
     helpers: { esc, money, date, phone, initials, badge, toast, emptyState }
   };
   TAKATA_VIEWS.helpers.icon = icon;

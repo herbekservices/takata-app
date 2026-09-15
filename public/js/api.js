@@ -60,12 +60,12 @@
     }
     let data = null;
     try { data = await res.json(); } catch (e) { data = null; }
-    if (!res.ok) throw new ApiError(res.status, (data && data.error) || 'Erreur ' + res.status);
+    if (!res.ok) throw new ApiError(res.status, (data && data.error) || 'Erreur ' + res.status, data);
     return data;
   }
 
   class ApiError extends Error {
-    constructor(status, message) { super(message); this.status = status; }
+    constructor(status, message, data) { super(message); this.status = status; this.data = data || null; }
   }
 
   // Requête avec file hors-ligne pour les écritures
@@ -148,8 +148,10 @@
   }
   function queueLength() { return store.queue.length; }
 
-  async function login(username, password) {
-    const data = await request('POST', '/auth/login', { username, password }, { skipAuthRedirect: true });
+  async function login(username, password, code) {
+    const payload = { username, password };
+    if (code) payload.code = code;
+    const data = await request('POST', '/auth/login', payload, { skipAuthRedirect: true });
     store.token = data.token;
     store.user = data.user;
     saveUser(data.user);
@@ -157,6 +159,14 @@
     return data;
   }
 
+
+  // --- Double authentification (TOTP) ---
+  async function twofaSetup() { return request('POST', '/auth/2fa/setup', {}); }
+  async function twofaEnable(code) { return request('POST', '/auth/2fa/enable', { code }); }
+  async function twofaDisable(password) { return request('POST', '/auth/2fa/disable', { password }); }
+
+  // --- Journal d audit (direction) ---
+  async function audit(limit, q) { return request('GET', '/admin/audit?limit=' + (limit || 200) + (q ? '&q=' + encodeURIComponent(q) : '')); }
   async function logout() {
     try { if (store.token) await request('POST', '/auth/logout'); } catch (e) {}
     store.token = '';
@@ -185,7 +195,7 @@
 
   window.TAKATA = {
     store, request, offlineAware, enqueue, flushQueue, queueLength,
-    login, logout, loadMe, onChange, setOnline, ApiError
+    login, twofaSetup, twofaEnable, twofaDisable, audit, logout, loadMe, onChange, setOnline, ApiError
   };
 
   window.addEventListener('online', () => { setOnline(true); flushQueue(); });

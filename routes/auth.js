@@ -1,6 +1,8 @@
 // routes/auth.js — Connexion / déconnexion / profil (avec rate-limiting)
 const express = require('express');
 const db = require('../db');
+const totp = require('../lib/totp');
+const { logAudit } = require('../lib/audit');
 const { hashPassword, verifyPassword, createToken, deleteToken, revokeAllTokens, requireAuth, requireAdmin, ROLE, isSuper } = require('../auth');
 
 const router = express.Router();
@@ -73,9 +75,21 @@ router.post('/login', (req, res) => {
   if (!user || !verifyPassword(password, user.password_hash) || !user.active) {
     registerFailure(ipKey, WINDOW_MS);
     registerFailure(userKey, USER_WINDOW_MS);
+    logAudit(req, 'login_echoue', 'user', null, 'identifiants incorrects');
     return res.status(401).json({ error: 'Identifiants incorrects.' });
   }
+  // Deuxieme facteur (comptes proteges : direction)
+  if (user.totp_enabled) {
+    const code = (req.body || {}).code;
+    if (!totp.verify(user.totp_secret, code)) {
+      registerFailure(ipKey, WINDOW_MS);
+      registerFailure(userKey, USER_WINDOW_MS);
+      logAudit(req, 'login_2fa_echec', 'user', user.id, 'code absent ou invalide');
+      return res.status(401).json({ error: 'Code de verification requis.', twofa: true });
+    }
+  }
   clearRateKeys(ipKey, userKey);
+  logAudit(req, 'connexion', 'user', user.id);
   const token = createToken(user.id);
   res.json({ token, user: publicUser(user) });
 });
@@ -118,5 +132,33 @@ router.post('/register-agent', requireAuth, (req, res) => {
 function notif2(userId, title, body) {
   try { db.prepare('INSERT INTO notifications (user_id, title, body) VALUES (?,?,?)').run(userId, title, body); } catch (e) {}
 }
+
+
+// ---------- Double authentification (TOTP) ----------
+// POST /api/auth/2fa/setup — genere un secret a confirmer par un code
+router.post('/2fa/setup', requireAuth, (req, res) => {
+  const secret = totp.generateSecret();
+  db.prepare('UPDATE users SET totp_secret = ?, totp_enabled = 0 WHERE id = ?').run(secret, req.user.id);
+  res.json({ secret, uri: totp.otpauthUri(secret, req.user.username), issuer: 'TAKATA' });
+});
+
+// POST /api/auth/2fa/enable { code }
+router.post('/2fa/enable', requireAuth, (req, res) => {
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  if (!user.totp_secret) return res.status(400).json({ error: 'Generez d abord un secret.' });
+  if (!totp.verify(user.totp_secret, (req.body || {}).code)) return res.status(400).json({ error: 'Code incorrect (verifiez l heure du telephone).' });
+  db.prepare('UPDATE users SET totp_enabled = 1 WHERE id = ?').run(req.user.id);
+  logAudit(req, '2fa_active', 'user', req.user.id);
+  res.json({ ok: true, twofa_enabled: true });
+});
+
+// POST /api/auth/2fa/disable { password }
+router.post('/2fa/disable', requireAuth, (req, res) => {
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  if (!verifyPassword((req.body || {}).password, user.password_hash)) return res.status(401).json({ error: 'Mot de passe incorrect.' });
+  db.prepare('UPDATE users SET totp_enabled = 0, totp_secret = NULL WHERE id = ?').run(req.user.id);
+  logAudit(req, '2fa_desactive', 'user', req.user.id);
+  res.json({ ok: true, twofa_enabled: false });
+});
 
 module.exports = router;

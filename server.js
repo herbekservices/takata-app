@@ -54,6 +54,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// Journal d audit generique : toute mutation API est enregistree (qui, quoi, quand, IP)
+app.use('/api', (req, res, next) => {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
+  if (req.path.startsWith('/auth/login')) return next(); // journalise finement dans auth.js
+  res.on('finish', () => {
+    try {
+      if (res.statusCode >= 400) return;
+      const { logAudit } = require('./lib/audit');
+      logAudit(req, req.method + ' ' + req.baseUrl + req.path, req.baseUrl + req.path, (req.params && req.params.id) || null, 'status ' + res.statusCode + ' | audit_generique');
+    } catch (e) { /* jamais bloquant */ }
+  });
+  next();
+});
 // Ne pas mettre en cache les réponses API (données métier sensibles)
 app.use('/api', (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store');

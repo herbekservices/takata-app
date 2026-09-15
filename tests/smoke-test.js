@@ -160,7 +160,7 @@ function check(name, cond, detail) {
   const token1 = agent1Login.data.token;
   const token2 = agent2Login.data.token;
   const c1 = await call('GET', '/api/customers', null, token1);
-  const agent1Customer = c1.data.find((x) => x.agent === 'Merveille Kabeya') || c1.data[0];
+  const agent1Customer = ((Array.isArray(c1.data) ? c1.data : []).find((x) => x.agent === 'Merveille Kabeya') || (Array.isArray(c1.data) ? c1.data[0] : null)) || { id: 0 };
   const idorPay = await call('POST', '/api/payments', { customer_id: agent1Customer.id, amount: 500 }, token2);
   check('IDOR paiement bloqué (403)', idorPay.status === 403, `status=${idorPay.status}`);
   const idorInstall = await call('POST', '/api/installations', { customer_id: agent1Customer.id, product_id: 1 }, token2);

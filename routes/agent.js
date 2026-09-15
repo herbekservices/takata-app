@@ -340,8 +340,10 @@ router.post('/installations', guardCommercial, (req, res) => {
 
     // Commission (souscription) : ABONNEMENT = 1re souscription du client -> 20 % ;
     // RÉABONNEMENT = renouvellement -> 5 %.
+    // SÉANCE À LA CARTE = achat ponctuel (non mensualisé) : toujours le taux du produit (20 %).
+    const oneOff = !product.payg || Number(product.nb_installments) <= 1;
     const isFirst = db.prepare('SELECT MIN(id) AS m FROM installations WHERE customer_id = ?').get(customer_id).m === info.lastInsertRowid;
-    const rate = isFirst ? product.commission_rate : RENEWAL_RATE;
+    const rate = (isFirst || oneOff) ? product.commission_rate : RENEWAL_RATE;
     const comm = Math.round(product.price * (rate / 100) * 100) / 100;
     if (comm > 0) {
       db.prepare(`INSERT INTO commissions (agent_id, installation_id, amount) VALUES (?,?,?)`)
@@ -465,10 +467,9 @@ router.post('/payments', guardCommercial, (req, res) => {
     // RÉABONNEMENT = tout ce qui suit (5 %).
     const prior = db.prepare('SELECT (SELECT COUNT(*) FROM installations WHERE customer_id = ?) + (SELECT COUNT(*) FROM payments WHERE customer_id = ? AND id <> ?) AS c').get(customer.id, customer.id, info.lastInsertRowid).c;
     let rate = RENEWAL_RATE;
-    if (prior === 0) {
-      const pr = instRow ? db.prepare('SELECT * FROM products WHERE id = ?').get(instRow.product_id) : null;
-      rate = pr ? pr.commission_rate : 20;
-    }
+    const pr = instRow ? db.prepare('SELECT * FROM products WHERE id = ?').get(instRow.product_id) : null;
+    if (pr && (!pr.payg || Number(pr.nb_installments) <= 1)) rate = pr.commission_rate; // séance à la carte = 20 %
+    else if (prior === 0) rate = pr ? pr.commission_rate : 20;
     const comm = Math.round(finalAmount * (rate / 100) * 100) / 100;
     if (comm > 0) {
       db.prepare(`INSERT INTO commissions (agent_id, payment_id, amount) VALUES (?,?,?)`)

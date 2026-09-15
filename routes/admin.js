@@ -331,10 +331,11 @@ router.post('/maintenance/recompute-commissions', (req, res) => {
     for (const c of rows) {
       let rate = REN, base = 0;
       if (c.installation_id) {
-        const inst = db.prepare('SELECT i.*, p.price, p.commission_rate FROM installations i JOIN products p ON p.id = i.product_id WHERE i.id = ?').get(c.installation_id);
+        const inst = db.prepare('SELECT i.*, p.price, p.commission_rate, p.payg, p.nb_installments FROM installations i JOIN products p ON p.id = i.product_id WHERE i.id = ?').get(c.installation_id);
         if (!inst) continue;
+        const oneOff = !inst.payg || Number(inst.nb_installments) <= 1;
         const first = db.prepare('SELECT MIN(id) AS m FROM installations WHERE customer_id = ?').get(inst.customer_id);
-        rate = (first && first.m === inst.id) ? inst.commission_rate : REN;
+        rate = (oneOff || (first && first.m === inst.id)) ? inst.commission_rate : REN;
         base = inst.price;
       } else if (c.payment_id) {
         const pay = db.prepare('SELECT * FROM payments WHERE id = ?').get(c.payment_id);

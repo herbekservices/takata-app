@@ -253,7 +253,7 @@ router.get('/stock', (req, res) => {
     const rows = db.prepare(`
       SELECT p.id AS product_id, p.name, p.category,
         CASE WHEN COALESCE((SELECT SUM(si.quantity) FROM stock_items si WHERE si.product_id = p.id AND (si.agent_id = ? OR si.agent_id IS NULL)), 0) > 0 THEN 1 ELSE 0 END AS disponible
-      FROM products p WHERE p.category = 'Intrant' ORDER BY p.name`).all(req.user.id, req.user.id);
+      FROM products p WHERE p.category = 'Intrant' ORDER BY p.name`).all(req.user.id);
     return res.json(rows);
   }
   const rows = isAdmin(req.user)

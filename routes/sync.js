@@ -131,12 +131,14 @@ function applyOp(user, op, payload) {
       // Refus si aucune unité disponible (pas de vente sans stock, même hors-ligne)
       const stockRow = db.prepare(`SELECT * FROM stock_items WHERE product_id = ? AND ((agent_id = ?) OR (agent_id IS NULL)) ORDER BY (agent_id = ?) DESC`)
         .all(product_id, user.id, user.id).find((r) => r.quantity > 0);
-      if (!stockRow) throw new Error('Stock insuffisant pour cette installation.');
+      // Prestation de service : enregistrement possible sans stock (pas de blocage)
       const info = db.prepare(`INSERT INTO installations (customer_id, agent_id, product_id, serial, install_date, status, notes) VALUES (?,?,?,?,?,?,?)`)
       .run(customer.id, user.id, product_id, serial || '', install_date || localDateStr(), status || 'installé', notes || '');
-      db.prepare('UPDATE stock_items SET quantity = quantity - 1 WHERE id = ?').run(stockRow.id);
+      if (stockRow) { // consomme le stock seulement s'il existe
+        db.prepare('UPDATE stock_items SET quantity = quantity - 1 WHERE id = ?').run(stockRow.id);
       db.prepare(`INSERT INTO stock_movements (product_id, agent_id, type, quantity, note) VALUES (?,?, 'installation', -1, ?)`)
         .run(product_id, user.id, `Installation #${info.lastInsertRowid} (hors-ligne)`);
+      }
       if (product.payg && product.nb_installments > 1) {
         const perInstall = Math.round((product.price / product.nb_installments) * 100) / 100;
         const insSched = db.prepare(`INSERT INTO installments (installation_id, customer_id, agent_id, due_date, amount) VALUES (?,?,?,?,?)`);

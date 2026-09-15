@@ -301,9 +301,11 @@ router.post('/installations', guardCommercial, (req, res) => {
       .run(customer_id, req.user.id, product_id, String(serial), install_date || localDateStr(), status, String(notes));
 
     // Stock : décrémenter la ligne disponible (dépôt central ou stock agent)
-    db.prepare('UPDATE stock_items SET quantity = quantity - 1 WHERE id = ?').run(available.id);
+    if (available) { // stock consomme uniquement s'il existe (service : jamais bloquant)
+      db.prepare('UPDATE stock_items SET quantity = quantity - 1 WHERE id = ?').run(available.id);
     db.prepare(`INSERT INTO stock_movements (product_id, agent_id, type, quantity, note) VALUES (?,?, 'installation', -1, ?)`)
       .run(product_id, req.user.id, `Installation #${info.lastInsertRowid}`);
+    }
 
     // Échéancier (payg) ou paiement comptant implicite
     if (product.payg && product.nb_installments > 1) {

@@ -39,8 +39,8 @@ router.get('/dashboard', (req, res) => {
     const liveInstallations = db.prepare(`SELECT COUNT(*) c FROM installations WHERE status='installé'`).get().c;
     const planned = db.prepare(`SELECT COUNT(*) c FROM installations WHERE status='planifiée'`).get().c;
     const activeCustomers = db.prepare(`SELECT COUNT(*) c FROM customers WHERE status='installé'`).get().c;
-    const stock = db.prepare(`SELECT si.product_id, si.quantity, p.name, p.category FROM stock_items si JOIN products p ON p.id=si.product_id WHERE si.quantity <= 10 ORDER BY si.quantity ASC LIMIT 5`).all();
-    const stockAlerts = db.prepare(`SELECT COUNT(*) c FROM stock_items WHERE quantity <= 10`).get().c;
+    const stock = db.prepare(`SELECT si.product_id, si.quantity, p.name, p.category FROM stock_items si JOIN products p ON p.id=si.product_id WHERE si.quantity <= 10 AND p.category = 'Intrant' ORDER BY si.quantity ASC LIMIT 5`).all();
+    const stockAlerts = db.prepare(`SELECT COUNT(*) c FROM stock_items si JOIN products p ON p.id=si.product_id WHERE si.quantity <= 10 AND p.category = 'Intrant'`).get().c;
     return res.json({
       stats: { customers: activeCustomers, prospects: 0, installations: liveInstallations, planned,
                paidMonth: 0, totalPaid: 0, overdue: 0, upcoming: 0, stockAlerts, pendingCommissions: 0, liveInstallations },
@@ -63,7 +63,7 @@ const params = isCommercialScope(req.user) ? [] : [uid];
   `).get(...params);
   const upcoming = db.prepare(`
     SELECT COUNT(*) c FROM installments i
-    WHERE i.status = 'pending' AND i.due_date >= date('now','localtime') AND i.due_date <= date('now','localtime','+7 days')
+    WHERE i.status = 'pending' AND i.due_date <= date('now','localtime','-10 days')
     AND ${where.replaceAll('agent_id', 'i.agent_id')}
   `).get(...params);
   // Stock par agent
@@ -87,7 +87,7 @@ const params = isCommercialScope(req.user) ? [] : [uid];
     stats: {
       customers: customers.c, prospects: prospects.c, installations: installations.c,
       paidMonth: paidMonth.s, totalPaid: totalPaid.s,
-      overdue: overdue.c, upcoming: upcoming.c, stockAlerts: stockAlerts.c,
+      overdue: overdue.c, overdue10: upcoming.c, stockAlerts: stockAlerts.c,
       pendingCommissions: pendingCommissions.s
     },
     lowStock, recentPayments
@@ -466,7 +466,8 @@ router.get('/installments', (req, res) => {
   const { status = '' } = req.query;
 const cond = [isCommercialScope(req.user) ? '1=1' : 'i.agent_id = ?'];
 const params = isCommercialScope(req.user) ? [] : [uid];
-  if (status) { cond.push('i.status = ?'); params.push(status); }
+  if (status === 'overdue10') { cond.push("i.status = 'pending' AND i.due_date <= date('now','localtime','-10 days')"); }
+  else if (status) { cond.push('i.status = ?'); params.push(status); }
   const rows = db.prepare(`
     SELECT i.*, c.name AS customer, c.phone AS customer_phone, p.name AS product
     FROM installments i JOIN customers c ON c.id = i.customer_id

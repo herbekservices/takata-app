@@ -220,7 +220,7 @@
         <a class="stat" href="#/installations"><div class="num">${s.installations}</div><div class="lbl">Réabonnements</div></a>
         <a class="stat" href="#/payments"><div class="num">${money(s.paidMonth)}</div><div class="lbl">Encaissé (mois)</div></a>
         <a class="stat" href="#/installments?status=overdue"><div class="num" style="color:${s.overdue ? 'var(--red)' : 'var(--green-dark)'}">${s.overdue}</div><div class="lbl">Réabonnements en retard</div></a>
-        <a class="stat" href="#/installments?status=pending"><div class="num">${s.upcoming}</div><div class="lbl">Réabonnements en retard ≥ 10 j</div></a>
+        <a class="stat" href="#/installments?status=overdue10"><div class="num" style="color:${s.overdue10 ? 'var(--red)' : 'var(--green-dark)'}">${s.overdue10}</div><div class="lbl">Réabonnements en retard ≥ 10 j</div></a>
         <a class="stat" href="#/stock"><div class="num">${s.stockAlerts}</div><div class="lbl">Intrants en stock faible</div></a>
         <a class="stat" href="#/commissions"><div class="num">${money(s.pendingCommissions)}</div><div class="lbl">Commissions à venir</div></a>
       </div>`;
@@ -292,7 +292,8 @@
         <div class="kv"><span>Total payé</span><b style="color:var(--green-dark)">${money(totalPaid)}</b></div>
         ${nextDue ? `<div class="kv"><span>Prochaine redevance</span><b class="${nextDue.due_date < new Date().toISOString().slice(0,10) ? 'badge red' : ''}">${money(nextDue.amount)} · ${date(nextDue.due_date)}</b></div>` : ''}
         ${isTech ? '' : `<br><div class="row"><a class="btn small" href="#/customers/${c.id}/edit">${icon('edit', 14)} Modifier</a>
-        <a class="btn small secondary" href="#/payments/new?customer=${c.id}">${icon('wallet')} Encaisser</a></div>`}
+        <a class="btn small secondary" href="#/payments/new?customer=${c.id}">${icon('wallet')} Encaisser</a>
+        <a class="btn small" href="#/installations/new?customer=${c.id}">Réabonnement (renouveler)</a></div>`}
       </div>
 
       <div class="section-title">Réabonnements (${c.installations.length})</div>
@@ -589,7 +590,7 @@ toast('Abonnement souscrit');
     const rows = await get('/installments' + (status ? '?status=' + status : ''));
     if (!rows) return emptyState(icon('wifi-off'), 'Hors ligne');
     const today = new Date().toISOString().slice(0, 10);
-    const filters = [['', 'Toutes'], ['pending', 'En attente'], ['overdue', 'En retard'], ['paid', 'Payées']];
+    const filters = [['', 'Toutes'], ['pending', 'En attente'], ['overdue', 'En retard'], ['overdue10', 'Retard ≥ 10 j'], ['paid', 'Payées']];
     return `
       <div style="display:flex;gap:6px;overflow-x:auto;padding:8px 14px">
         ${filters.map(([v, l]) => `<a class="badge ${(status || '') === v ? 'green' : 'gray'}" style="flex:none" href="#/installments${v ? '?status=' + v : ''}">${l}</a>`).join('')}

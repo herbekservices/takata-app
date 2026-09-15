@@ -12,7 +12,20 @@ const GH_PATH = process.env.GH_BACKUP_PATH || 'data/takata.db';
 (async () => {
   if (REPO && TOKEN && !fs.existsSync(DB)) {
     try {
-      const res = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + GH_PATH, {
+      // 1) sauvegarde chiffree en priorite
+      let res = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + GH_PATH + '.enc', {
+        headers: { Authorization: 'Bearer ' + TOKEN, 'User-Agent': 'takata-boot', Accept: 'application/vnd.github+json' },
+      });
+      if (res.ok) {
+        const j = await res.json();
+        const cryptoBackup = require('./lib/crypto-backup');
+        const raw = cryptoBackup.decrypt(Buffer.from(j.content, 'base64'));
+        fs.mkdirSync(path.dirname(DB), { recursive: true });
+        fs.writeFileSync(DB, raw);
+        console.log('[persist] base restauree depuis la sauvegarde CHIFFREE (' + raw.length + ' octets)');
+      } else {
+      // 2) repli : ancienne sauvegarde en clair
+      res = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + GH_PATH, {
         headers: { Authorization: 'Bearer ' + TOKEN, 'User-Agent': 'takata-boot', Accept: 'application/vnd.github+json' },
       });
       if (res.ok) {
@@ -22,6 +35,7 @@ const GH_PATH = process.env.GH_BACKUP_PATH || 'data/takata.db';
         console.log('[persist] base restaurée depuis GitHub (' + j.content.length + ' octets base64)');
       } else {
         console.log('[persist] aucune sauvegarde distante (HTTP ' + res.status + ')');
+      }
       }
     } catch (e) {
       console.error('[persist] restauration impossible : ' + e.message);

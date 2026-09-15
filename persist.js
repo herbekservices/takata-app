@@ -24,9 +24,15 @@ async function backupNow(db) {
   try {
     try { db.pragma('wal_checkpoint(TRUNCATE)'); } catch (e) { /* WAL déjà vidé */ }
     const file = db.name;
-    const content = fs.readFileSync(file).toString('base64');
+    const raw = fs.readFileSync(file);
+    const cryptoBackup = require('./lib/crypto-backup');
+    const useEnc = cryptoBackup.enabled();
+    // Si une cle est fournie, la sauvegarde est CHIFFREE (AES-256-GCM) avant envoi
+    const payload = useEnc ? cryptoBackup.encrypt(raw) : raw;
+    const targetPath = useEnc ? (GH_PATH + '.enc') : GH_PATH;
+    const content = payload.toString('base64');
     let sha;
-    const cur = await api(`https://api.github.com/repos/${REPO}/contents/${GH_PATH}?ref=${BRANCH}`);
+    const cur = await api(`https://api.github.com/repos/${REPO}/contents/${targetPath}?ref=${BRANCH}`);
     if (cur.status === 200) sha = (await cur.json()).sha;
     const body = JSON.stringify({
       message: 'sauvegarde base TAKATA ' + new Date().toISOString(),
@@ -34,9 +40,9 @@ async function backupNow(db) {
       sha,
       branch: BRANCH,
     });
-    const put = await api(`https://api.github.com/repos/${REPO}/contents/${GH_PATH}`, { method: 'PUT', body });
+    const put = await api(`https://api.github.com/repos/${REPO}/contents/${targetPath}`, { method: 'PUT', body });
     const ok = put.status === 200 || put.status === 201;
-    console.log('[persist] sauvegarde ' + (ok ? 'OK' : 'ECHEC HTTP ' + put.status));
+    console.log('[persist] sauvegarde ' + (ok ? 'OK' : 'ECHEC HTTP ' + put.status) + (useEnc ? ' (chiffree AES-256-GCM)' : ' (en clair)'));
     return { ok };
   } catch (e) {
     console.error('[persist] sauvegarde impossible : ' + e.message);

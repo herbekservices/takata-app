@@ -1,16 +1,16 @@
 // Service Worker Takata Kwetu — mode hors-ligne
 // Numéro de version : à incrémenter à chaque mise à jour du shell (l'appel reg.update()
 // au démarrage + Cache-Control no-cache sur /sw.js garantissent la détection rapide).
-const CACHE = 'takata-v7';
+const CACHE = 'takata-v8';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-'/css/takata.css?v=4',
-'/js/app.js?v=4',
-'/js/api.js?v=4',
-'/js/views.js?v=4',
-'/js/admin.js?v=4',
+'/css/takata.css?v=8',
+'/js/app.js?v=8',
+'/js/api.js?v=8',
+'/js/views.js?v=8',
+'/js/admin.js?v=8',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/apple-touch-icon.png',

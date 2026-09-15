@@ -286,7 +286,13 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
       <div class="card">
         <div class="page-title" style="margin:0 0 12px;font-weight:600">Mouvement de stock (entrée / sortie)</div>
         <div class="field"><label for="m-product">Produit</label><select id="m-product">${(products || []).map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></div>
-<div class="field"><label for="m-agent">Attribuer à (agent)</label><select id="m-agent"><option value="">Dépôt central (sans agent)</option>${(agents || []).filter((x) => x.active).map((a) => `<option value="${a.id}">${esc(a.full_name)}</option>`).join('')}</select></div>
+<div class="field"><label>Attribuer à — cliquez pour sélectionner</label>
+        <input type="hidden" id="m-agent" value="">
+        <div class="chip-row" id="m-agent-chips">
+          <button type="button" class="badge green chip sel" data-id="" onclick="TAKATA_ADMIN.pickAgent(this)">Dépôt central</button>
+          ${(agents || []).filter((x) => x.active).map((a) => `<button type="button" class="badge gray chip" data-id="${a.id}" onclick="TAKATA_ADMIN.pickAgent(this)">${esc(a.full_name)}</button>`).join('')}
+        </div>
+        <div class="hint">Sélection : <b id="m-agent-label">Dépôt central</b></div></div>
         <div class="row"><div class="field"><label for="m-type">Type</label><select id="m-type"><option value="in">Entrée (+)</option><option value="out">Sortie (−)</option><option value="return">Retour</option></select></div>
         <div class="field"><label for="m-qty">Quantité</label><input id="m-qty" type="number" value="1"></div></div>
         <button class="btn" onclick="TAKATA_ADMIN.doMove()">Enregistrer le mouvement</button>
@@ -322,6 +328,14 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
   }
 
 
+  function pickAgent(btn) {
+    const row = document.getElementById('m-agent-chips');
+    if (row) row.querySelectorAll('.chip').forEach((c) => { c.classList.remove('sel', 'green'); c.classList.add('gray'); });
+    btn.classList.add('sel', 'green'); btn.classList.remove('gray');
+    const hid = document.getElementById('m-agent'); if (hid) hid.value = btn.dataset.id || '';
+    const lbl = document.getElementById('m-agent-label'); if (lbl) lbl.textContent = btn.textContent.trim();
+  }
+
   async function doMove() {
     const body = {
       product_id: Number(document.getElementById('m-product').value),
@@ -353,7 +367,7 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
       ${pending.length ? `<div style="padding:0 14px"><button class="btn" onclick="TAKATA_ADMIN.payCommissions()">${icon('wallet')} Payer les ${pending.length} commission(s) en attente</button></div>` : ''}
     `;
   }
-  const badgeC = (s) => s === 'paid' ? '<span class="badge green">Payée</span>' : '<span class="badge amber">En attente</span>';
+  const badgeC = (s) => s === 'paid' ? '<span class="badge green">Validée</span>' : '<span class="badge red">À valider</span>';
 
   async function payCommissions() {
     const d = await get('/commissions');
@@ -373,14 +387,14 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
     const r = await get('/reports/summary');
     if (!r) return errState(icon('chart'));
     const exportsList = [
-['customers', 'users', 'Clients'], ['prospects', 'target', 'Prospects'], ['installations', 'recycle', 'Abonnements'],
+['customers', 'users', 'Clients'], ['prospects', 'target', 'Prospects'], ['installations', 'recycle', 'Réabonnements'],
 ['payments', 'wallet', 'Paiements'], ['installments', 'calendar', 'Échéances'], ['agents', 'user', 'Agents'], ['commissions', 'award', 'Commissions']
     ];
     return `
       <div class="card">
         <div class="kv"><span>Encaissements totaux</span><b style="color:var(--green-dark)">${money(r.payments.total)}</b></div>
         <div class="kv"><span>Nombre de paiements</span><b>${r.payments.count}</b></div>
-        <div class="kv"><span>Abonnements en service</span><b>${r.installations}</b></div>
+        <div class="kv"><span>Réabonnements en service</span><b>${r.installations}</b></div>
         <div class="kv"><span>Nouveaux clients</span><b>${r.newCustomers}</b></div>
       </div>
       <div class="section-title">Par méthode de paiement</div>
@@ -444,6 +458,6 @@ const { esc, money, date, toast, icon } = TAKATA_VIEWS.helpers;
   window.TAKATA_ADMIN = {
 auditView, adminHomeView, agentsView, agentFormView, createAgent, saveAgent, agentEditView, deleteAgent, toggleAgent, resetPassword, setStock, downloadExport,
     productsView, productFormView, saveProduct, toggleProduct, editProduct,
-    adminStockView, doMove, adminCommissionsView, payCommissions, reportsView
+    adminStockView, doMove, pickAgent, adminCommissionsView, payCommissions, reportsView
   };
 })();

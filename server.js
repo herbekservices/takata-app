@@ -106,7 +106,9 @@ app.use(express.static(path.join(__dirname, 'public'), {
   index: 'index.html',
   setHeaders(res, filePath) {
     if (filePath.endsWith('sw.js') || filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
-    else if (/\.(js|css|png|jpe?g|webp|svg|woff2?)$/i.test(filePath) || filePath.includes('icons')) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    else if (/\.(png|jpe?g|webp|gif|svg|ico|woff2?)$/i.test(filePath) || filePath.includes('icons')) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        // JS/CSS : revalidation systematique (evite qu'un ancien shell reste figé sur les appareils)
+        else if (/\.(js|css)$/i.test(filePath)) res.setHeader('Cache-Control', 'no-cache');
     else if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
   }
 }));

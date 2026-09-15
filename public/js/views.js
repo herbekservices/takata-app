@@ -239,14 +239,14 @@
         ${(d.lowStock || []).map((p) => listItem(icon('box'), esc(p.name), `${p.quantity} unité(s) restante(s)`, `<span class="badge ${p.quantity === 0 ? 'red' : 'amber'}">${p.quantity === 0 ? 'Rupture' : 'Bientôt épuisé'}</span>`, isAdmin ? '#/admin/stock' : '#/stock')).join('') || emptyState(icon('check'), 'Stocks suffisants')}
       </div>
 
-      ${!isTech && +s.overdue ? `<div class="card" style="border-color:var(--red)"><h3>${icon('alert')} Relances à faire (${s.overdue})</h3><p class="muted">Des redevances sont en retard. Pensez à relancer vos clients.</p><br><a class="btn small" href="#/installments">Voir les échéances</a></div>` : ''}
+      ${!isTech && +s.overdue ? `<div class="card" style="border-color:var(--red)"><h3>${icon('alert')} Relances à faire (${s.overdue})</h3><p class="muted">Des réabonnements sont en retard. Pensez à relancer vos clients.</p><br><a class="btn small" href="#/installments">Voir les échéances</a></div>` : ''}
     `;
   }
 
 
   async function cancelInstallation(id) {
-    if (!confirm('Annuler cet abonnement ? Les échéances en attente seront supprimées et le stock restitué.')) return;
-    try { await TAKATA.request('POST', '/api/installations/' + id + '/cancel', {}); toast('Abonnement annulé ✅ stock restitué'); renderRoute(); }
+    if (!confirm('Annuler ce réabonnement ? Les échéances en attente seront supprimées et le stock restitué.')) return;
+    try { await TAKATA.request('POST', '/api/installations/' + id + '/cancel', {}); toast('Réabonnement annulé ✅ stock restitué'); renderRoute(); }
     catch (e) { toast(e.message || 'Erreur', true); }
   }
   // ============ CLIENTS ============
@@ -290,7 +290,7 @@
         <div class="kv"><span>Adresse</span><b>${esc(c.address || '—')}</b></div>
         <div class="kv"><span>Agent</span><b>${esc(c.agent || '—')}</b></div>
         <div class="kv"><span>Total payé</span><b style="color:var(--green-dark)">${money(totalPaid)}</b></div>
-        ${nextDue ? `<div class="kv"><span>Prochaine redevance</span><b class="${nextDue.due_date < new Date().toISOString().slice(0,10) ? 'badge red' : ''}">${money(nextDue.amount)} · ${date(nextDue.due_date)}</b></div>` : ''}
+        ${nextDue ? `<div class="kv"><span>Prochain réabonnement</span><b class="${nextDue.due_date < new Date().toISOString().slice(0,10) ? 'badge red' : ''}">${money(nextDue.amount)} · ${date(nextDue.due_date)}</b></div>` : ''}
         ${isTech ? '' : `<br><div class="row"><a class="btn small" href="#/customers/${c.id}/edit">${icon('edit', 14)} Modifier</a>
         <a class="btn small secondary" href="#/payments/new?customer=${c.id}">${icon('wallet')} Encaisser</a>
         <a class="btn small" href="#/installations/new?customer=${c.id}">Réabonnement (renouveler)</a></div>`}
@@ -299,7 +299,7 @@
       <div class="section-title">Réabonnements (${c.installations.length})</div>
       <div class="list">
         ${c.installations.map((i) => listItem(icon('recycle'), esc(i.product), `Depuis le ${date(i.install_date)} · ${money(i.price)}`, badge(i.status), `#/installations/${i.id}`)).join('') || emptyState(icon('recycle'), 'Aucun abonnement')}
-        ${isTech ? '' : `<a class="btn small secondary" style="margin:4px auto;display:flex;width:auto" href="#/installations/new?customer=${c.id}">+ Souscrire un abonnement</a>`}
+        ${isTech ? '' : `<a class="btn small secondary" style="margin:4px auto;display:flex;width:auto" href="#/installations/new?customer=${c.id}">+ Souscrire un réabonnement</a>`}
       </div>
 
       <div class="section-title">Échéancier</div>
@@ -361,13 +361,14 @@
     const rows = await get('/prospects?search=' + encodeURIComponent(search) + (status ? '&status=' + status : ''));
     if (!rows) return emptyState(icon('wifi-off'), 'Hors ligne — réessayez plus tard');
     const filters = ['', 'nouveau', 'contacté', 'converti', 'perdu'];
+    const canSeeOwner = ['admin', 'admincomm', 'admintech', 'admingen'].includes((TAKATA.store.user || {}).role);
     return `
       ${searchBar('Rechercher un prospect', search, "location.hash='#/prospects?search='+encodeURIComponent(this.value)")}
       <div style="display:flex;gap:6px;overflow-x:auto;padding:8px 14px">
         ${filters.map((f) => `<a class="badge ${(status || '') === f ? 'green' : 'gray'}" style="flex:none" href="#/prospects${f ? '?status=' + f : ''}">${f ? esc(f) : 'Tous'}</a>`).join('')}
       </div>
       <div class="list">
-        ${rows.map((p) => `<div class="list-item" style="cursor:default"><div class="avatar">${initials(p.name)}</div><div class="body"><div class="title">${esc(p.name)}</div><div class="desc">${phone(p.phone)} · ${esc(p.village)} · ${esc(p.interest)}</div></div>${badge(p.status)}${p.status !== 'converti' ? `<button class="btn small secondary" style="margin-left:6px" onclick="TAKATA_VIEWS.convertProspect(${p.id},this)">Convertir</button>` : ''}</div>`).join('') || emptyState(icon('target'), 'Aucun prospect trouvé')}
+        ${rows.map((p) => `<div class="list-item" style="cursor:default"><div class="avatar">${initials(p.name)}</div><div class="body"><div class="title">${esc(p.name)}</div><div class="desc">${phone(p.phone)} · ${esc(p.village)} · ${esc(p.interest)}${canSeeOwner && p.agent ? ' · <i>' + esc(p.agent) + '</i>' : ''}</div></div>${badge(p.status)}${p.status !== 'converti' ? `<button class="btn small secondary" style="margin-left:6px" onclick="TAKATA_VIEWS.convertProspect(${p.id},this)">Convertir</button>` : ''}</div>`).join('') || emptyState(icon('target'), 'Aucun prospect trouvé')}
       </div>
       ${fab("location.hash='#/prospects/new'", 'Nouveau prospect')}
     `;
@@ -381,7 +382,9 @@
     }
     try {
       const r = await TAKATA.request('POST', `/prospects/${id}/convert`);
-      toast('Prospect converti en client');
+      let msg = 'Prospect converti en client ✅';
+      try { const d = await get('/dashboard'); if (d && d.stats) msg += ' — encaissé cumulé du mois : ' + money(d.stats.paidMonth); } catch (e) {}
+      toast(msg);
       location.hash = '#/customers/' + r.customerId;
     } catch (e) {
       toast(e.message || 'Erreur', true);
@@ -439,9 +442,9 @@
     const isTech = (TAKATA.store.user || {}).role === 'technicien';
     return `
       <div class="list">
-        ${rows.map((i) => listItem(icon('recycle'), esc(i.customer), esc(i.product) + ' · ' + date(i.install_date), badge(i.status) + (i.payg ? ' <span class="badge amber">Mensuel</span>' : ''), `#/installations/${i.id}`)).join('') || emptyState(icon('recycle'), 'Aucun abonnement enregistré')}
+        ${rows.map((i) => listItem(icon('recycle'), esc(i.customer), esc(i.product) + ' · ' + date(i.install_date), badge(i.status) + (i.payg ? ' <span class="badge amber">Mensuel</span>' : ''), `#/installations/${i.id}`)).join('') || emptyState(icon('recycle'), 'Aucun réabonnement enregistré')}
       </div>
-      ${isTech ? '' : fab("location.hash='#/installations/new'", 'Nouvel abonnement')}
+      ${isTech ? '' : fab("location.hash='#/installations/new'", 'Nouveau réabonnement')}
     `;
   }
 
@@ -450,12 +453,13 @@
     const preCustomer = (params.customer) || '';
     return `
       <div class="card">
-        <div class="page-title" style="margin:0 0 12px">Souscrire un abonnement</div>
+        <div class="page-title" style="margin:0 0 12px">Souscrire un réabonnement</div>
         <div class="field"><label for="f-customer">Client *</label><input id="f-customer" list="customer-list" value="${esc(preCustomer)}" placeholder="ID client (ex. 3)"><datalist id="customer-list">${(await customersOptions()).join('')}</datalist><div class="hint">Sélectionnez ou saisissez l'ID du client.</div></div>
         <div class="field"><label for="f-product">Formule *</label><select id="f-product">${(products || []).filter((p) => p.category === 'Formule collecte').map((p) => `<option value="${p.id}">${esc(p.name)} — ${money(p.price)}${p.payg ? ' (mensuel)' : ''}</option>`).join('')}</select></div>
         <div class="field"><label for="f-serial">Référence contrat</label><input id="f-serial" placeholder="ex. TAK-ABS-0080"></div>
         <div class="field"><label for="f-date">Date de début</label><input id="f-date" type="date" value="${new Date().toISOString().slice(0, 10)}"></div>
         <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" rows="2"></textarea></div>
+        <div class="hint">Prestation de service : l'enregistrement est possible même si le stock est à zéro.</div>
         <button class="btn" onclick="TAKATA_VIEWS.saveInstallation()">Souscrire</button>
       </div>`;
   }
@@ -481,7 +485,7 @@
     }
     try {
       const r = await TAKATA.offlineAware('POST', '/installations', { customer_id: cid, product_id: Number(productId), serial, install_date, notes });
-toast('Abonnement souscrit');
+toast('Réabonnement souscrit');
       location.hash = r && r.queued ? '#/installations' : '#/installations';
     } catch (e) { toast(e.message || 'Erreur', true); }
   }
@@ -489,7 +493,7 @@ toast('Abonnement souscrit');
   // Détail d'une installation
   async function installationDetailView(params) {
     const i = await get('/installations/' + params.id);
-    if (!i) return emptyState(icon('recycle'), 'Abonnement introuvable');
+    if (!i) return emptyState(icon('recycle'), 'Réabonnement introuvable');
     const totalInstall = (i.installments || []).reduce((a, x) => a + x.amount, 0);
     const paid = (i.installments || []).filter((x) => x.status === 'paid');
     const paidAmt = paid.reduce((a, x) => a + x.amount, 0);
@@ -504,14 +508,14 @@ toast('Abonnement souscrit');
         <div class="kv"><span>Réabonnement (mensuel)</span><b>${money(i.price)}</b></div>
         <div class="kv"><span>Avancement paiements</span><b>${pct}% (${money(paidAmt)} / ${money(totalInstall || i.price)})</b></div>
         ${totalInstall ? `<progress max="100" value="${pct}"></progress>` : ''}
-        ${['admin','admingen','admincomm','admintech'].includes((TAKATA.store.user || {}).role) && !i.cancelled ? `<hr class="divider"><button class="btn secondary" onclick="TAKATA_VIEWS.cancelInstallation(${i.id})">Annuler cet abonnement (restitue le stock)</button>` : ''}
-        ${i.cancelled ? '<div class="muted" style="margin-top:8px">Abonnement annulé le ' + esc(i.cancelled_at || '') + '</div>' : ''}
+        ${['admin','admingen','admincomm','admintech'].includes((TAKATA.store.user || {}).role) && !i.cancelled ? `<hr class="divider"><button class="btn secondary" onclick="TAKATA_VIEWS.cancelInstallation(${i.id})">Annuler ce réabonnement (restitue le stock)</button>` : ''}
+        ${i.cancelled ? '<div class="muted" style="margin-top:8px">Réabonnement annulé le ' + esc(i.cancelled_at || '') + '</div>' : ''}
       </div>
       <div class="section-title">Échéancier (${(i.installments || []).length})</div>
       <div class="list">
         ${(i.installments || []).map((x) => `<div class="card" style="margin:6px 14px"><div class="row"><div style="flex:1"><b>${money(x.amount)}</b><div class="muted">Due le ${date(x.due_date)}</div></div>${badge(x.paid_date ? 'paid' : (x.due_date < new Date().toISOString().slice(0,10) ? 'overdue' : 'pending'))}</div></div>`).join('') || emptyState(icon('calendar'), 'Séance à la carte (paiement unique)')}
       </div>
-      ${(TAKATA.store.user || {}).role === 'technicien' ? '' : `<div style="padding:0 14px"><a class="btn" href="#/payments/new?customer=${i.customer_id}">${icon('wallet')} Encaisser une redevance</a></div>`}
+      ${(TAKATA.store.user || {}).role === 'technicien' ? '' : `<div style="padding:0 14px"><a class="btn" href="#/payments/new?customer=${i.customer_id}">${icon('wallet')} Encaisser un réabonnement</a></div>`}
     `;
   }
 
@@ -590,7 +594,7 @@ toast('Abonnement souscrit');
     const rows = await get('/installments' + (status ? '?status=' + status : ''));
     if (!rows) return emptyState(icon('wifi-off'), 'Hors ligne');
     const today = new Date().toISOString().slice(0, 10);
-    const filters = [['', 'Toutes'], ['pending', 'En attente'], ['overdue', 'En retard'], ['overdue10', 'Retard ≥ 10 j'], ['paid', 'Payées']];
+    const filters = [['', 'Toutes'], ['pending', 'Réabonnement en attente'], ['overdue', 'Réabonnement en retard'], ['overdue10', 'Réabonnement en retard ≥ 10 j'], ['paid', 'Payées']];
     return `
       <div style="display:flex;gap:6px;overflow-x:auto;padding:8px 14px">
         ${filters.map(([v, l]) => `<a class="badge ${(status || '') === v ? 'green' : 'gray'}" style="flex:none" href="#/installments${v ? '?status=' + v : ''}">${l}</a>`).join('')}
@@ -912,10 +916,12 @@ toast('Abonnement souscrit');
         </div>
         <div class="field"><label for="t-maisons">Maisons désinfectées</label><input id="t-maisons" type="number" min="0" value="0"></div>
         <div class="section-title">Produits utilisés et état de besoin</div>
-        ${prods.map((p) => `<div class="row">
-          <div class="field"><label for="t-q-${p.id}">${esc(p.name)} — utilisé</label><input id="t-q-${p.id}" type="number" min="0" value="0" step="any"></div>
-          <div class="field"><label for="t-b-${p.id}">État de besoin (à commander)</label><input id="t-b-${p.id}" type="number" min="0" value="0" step="any"></div>
-        </div>`).join('') || emptyState('box', 'Aucun produit intrant au catalogue')}
+        ${prods.map((p) => `<div class="mat-row">
+          <div class="row" style="justify-content:space-between;align-items:center"><b>${esc(p.name)}</b><button type="button" class="btn small secondary" onclick="var f=this.closest('.mat-row').querySelector('.mat-fields');f.hidden=!f.hidden;this.textContent=f.hidden?'Choisir':'Masquer';">Choisir</button></div>
+          <div class="mat-fields" hidden style="margin-top:8px"><div class="row">
+            <div class="field"><label for="t-q-${p.id}">Utilisé</label><input id="t-q-${p.id}" type="number" min="0" value="0" step="any"></div>
+            <div class="field"><label for="t-b-${p.id}">Besoin (à commander)</label><input id="t-b-${p.id}" type="number" min="0" value="0" step="any"></div>
+          </div></div></div>`).join('') || emptyState('box', 'Aucun produit intrant au catalogue')}
         <div class="field"><label for="t-comment">Observations de terrain</label><textarea id="t-comment" rows="4" placeholder="Ex. : incidents de la tournée, état du matériel, remarques…"></textarea></div>
         <button class="btn" type="submit">${icon('check', 16)} Enregistrer le rapport du jour</button>
       </form>`;
